@@ -19,13 +19,13 @@ class Layer(object):
 		for i in range(len(raw_coeff)):
 			self.output[i] = sigmoid(raw_coeff[i])
 
+	def toString(self):
+		return ("Input \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output))
+
+
+
 inp = Layer(5,5,None)
 inp.output = np.array([5.0,2.0,3.0,4.0,5.0])
 out = Layer(5,2,inp)
 out.calc()
-print("Input")
-print(out.prev.output)
-print("Coeff")
-print(out.coeff)
-print("Output")
-print(out.output)
+print(out.toString())
