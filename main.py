@@ -6,15 +6,23 @@ from neuralNet import NeuralNet
 
 print ("-- TEST STRUCTURE et DISPLAY --")
 print ("\n")
-inp = Layer(5,5,None,"Input")
-inp.output = np.array([5.0,2.0,3.0,4.0,5.0])
+prev = Layer(5,5,None, "test")
+prev.output = [1, 0, 0, 0, 0]
+inp = Layer(5,5,prev,"Input")
 out = Layer(5,2,inp)
-out.calc()
-test = NeuralNet(5,5,2)
-test.display()
+
 print ("\n")
 print ("\n")
 
 print ("-- TEST RUN --")
 print ("\n")
-print (test.run([1, 0, 0, 0, 0]))
+
+print ("\n")
+print ("\n")
+test = NeuralNet(300,100,6,3)
+test.addLayer(100,30)
+test.addLayer(30,10)
+test.addLayer(10,6)
+
+
+print(test.run(300*[1]))
