@@ -5,14 +5,16 @@ from layer import sigmoid
 
 class NeuralNet(object):
 	"""docstring for ClassName"""
-	def __init__(self, nbInput1, nbOutput1, nbOutput2):
+	def __init__(self, nbInput1, nbOutput1, nbInput2, nbOutput2):
 		inp=Layer(nbInput1, nbOutput1, None, "Input")
-		self.Layers = [inp,Layer(nbOutput1, nbOutput2, inp, "Output")]
+		self.Layers = [inp,Layer(nbInput2, nbOutput2, inp, "Output")]
 
 	"""Ajoute une layer en avant derniere position"""
 	def addLayer(self,nbInput, nbOutput):
 		n=len(self.Layers)
-		self.Layers.insert((n-1),Layer(nbInput, nbOutput, self.Layers[n-2]))
+		add=Layer(nbInput, nbOutput, self.Layers[n-2])
+		self.Layers[n-1].prev=add
+		self.Layers.insert((n-1),add)
 
 
 	"""Affiche recursivement les layer en partant des inputs et en remontant
