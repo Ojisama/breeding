@@ -6,9 +6,10 @@ def sigmoid(x):
 
 class Layer(object):
 	"""docstring for Layer"""
-	def __init__(self, nbInput, nbOutput, prev):
+	def __init__(self, nbInput, nbOutput, prev, name="Unnamed"):
 		self.size = nbInput*nbOutput
 		self.prev = prev
+		self.name = name+" ("+str(nbInput)+"x"+str(nbOutput)+")"
 		self.output = np.zeros(nbOutput)
 		self.coeff = np.ones((nbOutput,nbInput))
 		self.coeff[0] *= 2
@@ -20,12 +21,15 @@ class Layer(object):
 			self.output[i] = sigmoid(raw_coeff[i])
 
 	def toString(self):
-		return ("Input \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output))
+		if(self.prev==None):
+			return ("-------BEGINNING OF INPUT LAYER: ---------------\nInput Layer, no coeffs.\nNumber of inputs: "+str(len(self.output))+"\n--------------END OF INPUT LAYER-------------")
+		return ("-------BEGINNING OF LAYER: "+self.name+" ---------------\nInput \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF LAYER: "+self.name+"-------------")
 
 
 
-inp = Layer(5,5,None)
+inp = Layer(5,5,None,"Input")
 inp.output = np.array([5.0,2.0,3.0,4.0,5.0])
 out = Layer(5,2,inp)
 out.calc()
+print(inp.toString())
 print(out.toString())
