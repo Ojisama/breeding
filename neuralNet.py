@@ -20,10 +20,10 @@ class NeuralNet(object):
 	def display(self):
 		def disp(lay):
 			if lay.prev==None :
-				print lay.toString()
+				print (lay.toString())
 			else :
 				disp(lay.prev)
-				print lay.toString()
+				print (lay.toString())
 		n=len(self.Layers)
 		disp(self.Layers[n-1])
 
