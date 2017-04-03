@@ -21,7 +21,7 @@ class Layer(object):
 			self.output[i] = sigmoid(raw_coeff[i])
 
 	def toString(self):
-		if(self.prev==None):
+		if(self.prev is None):
 			return ("-------BEGINNING OF INPUT LAYER: ---------------\nInput Layer, no coeffs.\nNumber of inputs: "+str(len(self.output))+"\n--------------END OF INPUT LAYER-------------")
 		return ("-------BEGINNING OF LAYER: "+self.name+" ---------------\nInput \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF LAYER: "+self.name+"-------------")
 
