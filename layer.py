@@ -3,7 +3,6 @@
 import numpy as np
 import math
 
-
 class Layer(object):
 
 	"""Layer est une couche de neurones
@@ -38,5 +37,3 @@ class Layer(object):
 		if(self.prev is None):
 			return ("-------BEGINNING OF INPUT LAYER: ---------------\nInput Layer \nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF INPUT LAYER-------------")
 		return ("-------BEGINNING OF LAYER: "+self.name+" ---------------\nInput \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF LAYER: "+self.name+"-------------")
-
-
