@@ -4,11 +4,14 @@ import random
 class DNA():
 
     
-    def __init__(self, taille):       
+    def __init__(self, taille, rand=True):       
         self.data=[]
-        for i in range(taille):
-            self.data.append(random.random())
-
+	if rand:
+		for i in range(taille):
+		    self.data.append(random.random())
+	else:
+		for i in range(taille):
+                self.data.append(0)
 
     def crossover(self, ADN2, mutationcoeff):
 		new_adn = []
