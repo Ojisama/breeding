@@ -1,4 +1,5 @@
 from collections import deque, namedtuple
+import pool
 import random
 import pygame
 import select
@@ -16,15 +17,25 @@ BLUE = (0, 0, 255)
 DIRECTIONS = namedtuple('DIRECTIONS',
         ['Up', 'Down', 'Left', 'Right'])(0, 1, 2, 3)
 
-directionLoop = [0,0,1,1]
+
 
 
 def rand_color():
     return (random.randrange(254)|64, random.randrange(254)|64, random.randrange(254)|64)
 
 class Snake(object):
-    def __init__(self, direction=DIRECTIONS.Right, 
-            point=(16, 16, (20,120,80)), color=(20,120,80)):
+    """Description:
+    
+    Attributes:
+        color (triplet (int,int,int)): couleur du snake
+        deque (deque (double-ended queue, à la fois une pile et une file)): corps du snake
+        direction (int dans [0,3]): direction du snake (cf variable globale DIRECTIONS)
+        indexDirection (int): ???
+        nextDir (deque): pile des directions (FIFO) 
+        tailmax (int): taille du snake
+        individu (individu): instance d'individu associée à l'instance de Snake
+    """
+    def __init__(self, direction=DIRECTIONS.Right, point=(16, 16, (20,120,80)), color=(20,120,80), individuPool = None):
         self.tailmax = 4
         self.direction = direction 
         self.deque = deque()
@@ -32,12 +43,19 @@ class Snake(object):
         self.color = color
         self.nextDir = deque()
         self.indexDirection = 2
+        """if individuPool is None:
+            pool = Pool(1)
+            self.individu = pool.population.pop()
+        else:
+            self.individu = individu"""
     
     def get_color(self):
         return (20,120,80)
     
     def trad_direction(self, nv_dir):
-        """Traduit la direction demandée (relative) en direction absolue au serpent
+        """Traduit la direction demandée (relative, 0:gauche, 1: en face 2:droite) 
+        en direction absolue (N S W E)
+        Merci Agathe!
         
         Args:
             nv_dir (DIRECTION): direction relative
@@ -87,9 +105,11 @@ class Snake(object):
         Returns:
             void: ajoute en haut de pile la direction choisie
         """
-        self.nextDir.appendleft(self.trad_direction(directionLoop[self.indexDirection%4]))
+
+        self.nextDir.appendleft(direction)
         self.indexDirection+=1
 
+#______________________________________ SCRIPT DU JEU __________________________________
 
 
 def find_food(spots):
@@ -249,10 +269,10 @@ def is_food(board, point):
 
 # Return false to quit program, true to go to
 # gameover screen
-def one_player(screen): 
+def play(screen): 
     clock = pygame.time.Clock()
     spots = make_board()
-
+    indexDirection = 0
     snake = Snake()
     # Board set up
     spots[0][0] = 1
@@ -270,8 +290,16 @@ def one_player(screen):
                 break
         if done:
             return False
+    #____________________________ DECISION-MAKING _____________________________
 
-        snake.populate_nextDir(events)
+        directionLoop = [0,1,1]
+        direction = snake.trad_direction(directionLoop[indexDirection%3])
+        indexDirection+=1
+        snake.populate_nextDir(direction)
+
+    #____________________________ /DECISION-MAKING _____________________________
+
+        
 
         # Game logic
         next_head = move(snake)
@@ -380,6 +408,13 @@ def game_over(screen, eaten):
                     return False
                 if event.key == pygame.K_RETURN:
                     return True
+#______________________________________ /SCRIPT DU JEU ________________________________
+
+#______________________________________ SCRIPT DU BREEDING _____________________________
+
+
+
+#______________________________________ /SCRIPT DU BREEDING ____________________________
 
 def main():
     pygame.init()
@@ -395,13 +430,13 @@ def main():
             pick = menu(screen)
 
         options = {0 : quit,
-                1 : one_player}
+                1 : play}
         now = options[pick](screen)
         if now == False:
             break
         elif pick == 1 or pick == 2:
             eaten = now / 4 - 1
-            playing = game_over(screen, eaten)
+            #playing = game_over(screen, eaten)
             first = False
 
     pygame.quit()

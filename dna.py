@@ -9,33 +9,33 @@ class DNA():
 
 
     def crossover(self, ADN2, mutationcoeff):
-		new_adn = DNA(len(self.data))
-		for i in range(len(self.data)):
-			if (i%2 == 0):
-				newcoeff = self.data[i]
-			else:
-				newcoeff = ADN2[i]
-		
-			if (random.random() < mutationcoeff):
-				#print("mutation au rang " + str(i))
-			
-				hasard = random.randint(0,1)
-				changement = newcoeff*0.15
+        new_adn = DNA(len(self.data))
+        for i in range(len(self.data)):
+            if (i%2 == 0):
+                newcoeff = self.data[i]
+            else:
+                newcoeff = ADN2[i]
+        
+            if (random.random() < mutationcoeff):
+                #print("mutation au rang " + str(i))
+            
+                hasard = random.randint(0,1)
+                changement = newcoeff*0.15
 
-				if hasard == 0:
-					if (newcoeff + changement) > 1:
-						newcoeff = 1
-					else:
-						newcoeff += changement
-				else:
-					if (newcoeff - changement) < 0:
-						newcoeff = 0
-					else:
-						newcoeff -= changement
+                if hasard == 0:
+                    if (newcoeff + changement) > 1:
+                        newcoeff = 1
+                    else:
+                        newcoeff += changement
+                else:
+                    if (newcoeff - changement) < 0:
+                        newcoeff = 0
+                    else:
+                        newcoeff -= changement
 
-			new_adn.data[i] = newcoeff
-			
-		return(new_adn)
+            new_adn.data[i] = newcoeff
+            
+        return(new_adn)
 
 
 """adn1 = DNA(5714020)
