@@ -1,32 +1,35 @@
+from individu import Individu
 from collections import deque
-import individu
 
-class Pool(object):
+class Pool():
+
     """Population de (n) snakes à tester et à croiser
     
     Attributes:
         n (int): Taille de la population
         population (deque): ensemble des N individus de la populations
     """
-    def __init__(self, n):
-        super(Pool, self).__init__()
-        self.n = n
-        self.population = deque()
-        for i in range(0,self.n):
-            self.population.append(individu())
 
+    def __init__(self, n):
+        self.population = deque()
+        self.n = n
+        for i in range(self.n):
+            self.population.append(Individu())
+
+    def breeding(self):
+        return Individu()
+        
+
+    
     def getFitnessMax(self):
         fitnessMax = 0
         for individu in self.population:
-            if(fitnessMax<individu.getFitness()):
+            if individu.getFitness() > fitnessMax:
                 fitnessMax = individu.getFitness()
         return fitnessMax
 
     def getFitnessMoy(self):
-        sum = 0.
+        somme = 0
         for individu in self.population:
-            sum+=individu.getFitness()
-        return sum/self.n
-
-    def breeding(self):
-        return individu()
+            somme += individu.getFitness()
+        return somme/self.n
