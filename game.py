@@ -6,9 +6,10 @@ import random
 import pygame
 import select
 from individu import Individu
+from Mapping import *
 
 
-speed=15
+speed=150
 BOARD_LENGTH = 32
 OFFSET = 16
 WHITE = (255, 255, 255)
@@ -299,8 +300,8 @@ def play(screen):
         """directionLoop = [0,1,1,1,1]
         direction = snake.trad_direction(directionLoop[indexDirection%5])
         indexDirection+=1"""
-
-        snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu)))
+        inp = mappingAvecMur(spots, snake)
+        snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
         #____________________________ /DECISION-MAKING _____________________________
 
@@ -327,9 +328,9 @@ def play(screen):
 
         pygame.display.update()
 
-def network_nextDir(indiv):
-    output=indiv.reseau.run(4624*[1])
-    def max(liste):
+def network_nextDir(indiv,inp):
+    output=indiv.reseau.run(inp)
+    def maxIndice(liste):
         indice=0
         max=liste[0]
         for i in range(1,len(liste)):
@@ -337,7 +338,7 @@ def network_nextDir(indiv):
                 indice=i
                 max = liste[i]
         return indice
-    return max(output)
+    return maxIndice(output)
     
 
 def encode_deltas(delta_str):
@@ -428,7 +429,9 @@ def main():
     pygame.draw.rect(screen,pygame.Color(255,255,255,255),pygame.Rect(50,50,10,10))
     first = True
     playing = True
+    i=0
     while playing:
+        i+=1
         if first or pick == 3:
             pick = menu(screen)
 
@@ -441,7 +444,7 @@ def main():
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
-
+    print(i)
     pygame.quit()
 
 if __name__ == "__main__":
