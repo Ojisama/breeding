@@ -1,9 +1,6 @@
-from individu import Individu
-from collections import deque
-
 class Pool():
 
-    """Population de (n) snakes à tester et à croiser
+    """Population de (n) snakes a tester et a croiser
     
     Attributes:
         n (int): Taille de la population
