@@ -23,7 +23,7 @@ class Individu:
         self.reseau.load(self.dna.data)
 
     def getFitness(self):
-        return (100*size + health)
+        return (100*self.size + self.health)
 
 
 
