@@ -7,14 +7,13 @@ class DNA():
         for i in range(taille):
             self.data.append(random.random())
 
-
     def crossover(self, ADN2, mutationcoeff):
         new_adn = DNA(len(self.data))
         for i in range(len(self.data)):
             if (i%2 == 0):
                 newcoeff = self.data[i]
             else:
-                newcoeff = ADN2[i]
+                newcoeff = ADN2.data[i]
         
             if (random.random() < mutationcoeff):
                 #print("mutation au rang " + str(i))
@@ -33,8 +32,7 @@ class DNA():
                     else:
                         newcoeff -= changement
 
-            new_adn.data[i] = newcoeff
-            
+            new_adn.data[i] = newcoeff 
         return(new_adn)
 
 
