@@ -1,10 +1,11 @@
 # coding: utf-8
 
 from collections import deque, namedtuple
-import pool
+#import pool
 import random
 import pygame
 import select
+from individu import Individu
 
 
 speed=15
@@ -48,8 +49,8 @@ class Snake(object):
         """if individuPool is None:
             pool = Pool(1)
             self.individu = pool.population.pop()
-        else:
-            self.individu = individu"""
+        else:"""
+        self.individu = Individu()
     
     def get_color(self):
         return (20,120,80)
@@ -292,14 +293,16 @@ def play(screen):
                 break
         if done:
             return False
-    #____________________________ DECISION-MAKING _____________________________
 
-        directionLoop = [0,1,1]
-        direction = snake.trad_direction(directionLoop[indexDirection%3])
-        indexDirection+=1
-        snake.populate_nextDir(direction)
+        #____________________________ DECISION-MAKING _____________________________
 
-    #____________________________ /DECISION-MAKING _____________________________
+        """directionLoop = [0,1,1,1,1]
+        direction = snake.trad_direction(directionLoop[indexDirection%5])
+        indexDirection+=1"""
+
+        snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu)))
+
+        #____________________________ /DECISION-MAKING _____________________________
 
         
 
@@ -324,20 +327,18 @@ def play(screen):
 
         pygame.display.update()
 
-def network_nextDir(events, net_id):
-    # assume "arrows"
-    enc_dir = ""
-    for event in events:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                enc_dir += net_id + "u"
-            elif event.key == pygame.K_DOWN:
-                enc_dir += net_id + "d"
-            elif event.key == pygame.K_RIGHT:
-                enc_dir += net_id + "r"
-            elif event.key == pygame.K_LEFT:
-                enc_dir += net_id + "l"
-    return enc_dir
+def network_nextDir(indiv):
+    output=indiv.reseau.run(4624*[1])
+    def max(liste):
+        indice=0
+        max=liste[0]
+        for i in range(1,len(liste)):
+            if liste[i]>max :
+                indice=i
+                max = liste[i]
+        return indice
+    return max(output)
+    
 
 def encode_deltas(delta_str):
     # delta_str is in the form
