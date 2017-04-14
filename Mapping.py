@@ -1,4 +1,4 @@
-#renvoie un tableau de taille 34*34*4 correspondant aux inputs du réseau de neurones à partir du board
+#renvoie un tableau de taille 34*34*4 correspondant aux inputs du rĂŠseau de neurones Ă  partir du board
 #parcours de la grille dans le sens de la lecture
 def mappingAvecMur(board, snake):
     
@@ -9,12 +9,16 @@ def mappingAvecMur(board, snake):
     
     input = []
     
-    #mur supérieur
+    #mur supĂŠrieur
     for i in range(34):
         input+=obstacle
     
-    head = snake.deque.pop()
-    snake.append(head)
+    head=[]
+    temp = snake.deque.pop()
+    head.append(temp[0])
+    head.append(temp[1])
+    snake.deque.append(temp)
+    
     for i in range(32):        
         input += obstacle  #mur de gauche
         for j in range(32):
@@ -29,7 +33,7 @@ def mappingAvecMur(board, snake):
                 input += pomme
         input += obstacle  #mur de droite
     
-    #mur inférieur
+    #mur infĂŠrieur
     for i in range(34):
         input+=obstacle
         
@@ -43,10 +47,14 @@ def mappingSansMur(board, snake):
     pomme = [0,0,0,1]
     
     input = []
-        
-    head = snake.deque.pop()
-    snake.append(head)
     
+    
+    head=[]
+    temp = snake.deque.pop()
+    head.append(temp[0])
+    head.append(temp[1])
+    snake.deque.append(temp)
+
     for i in range(32):        
         for j in range(32):
             if board[i][j] == 0 :
@@ -54,7 +62,7 @@ def mappingSansMur(board, snake):
             elif board[i][j] == 1:
                 if [i,j] == head:
                     input += tete
-                else:                    
+                else:
                     input += obstacle
             elif board[i][j] == 2:
                 input += pomme
@@ -62,8 +70,4 @@ def mappingSansMur(board, snake):
     return input 
 
 
-#renvoie un tableau de taille 3*4 correspondant aux inputs du réseau de neurones à partir de la vision du serpent
-def mappingBis(board, snake):
-    
-    input = []
     
