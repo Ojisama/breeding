@@ -22,9 +22,11 @@ class Individu:
         # remplissage des coeff du reseau de neuronne
         self.reseau.load(self.dna.data)
 
+    def getFitness(self):
+        return (100*size + health)
+
 
 
 """indi = Individu()
 #print(indi.dna.data)
 print(len(indi.dna.data))"""
-
