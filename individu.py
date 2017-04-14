@@ -8,10 +8,7 @@ class Individu:
         self.health = 99
         
         # creation reseau de neuronne de l'individu
-        self.reseau = NeuralNet(4624,1156,12,3)
-        self.reseau.addLayer(1156,300)
-        self.reseau.addLayer(300,70)
-        self.reseau.addLayer(70,12)
+        self.reseau = NeuralNet(4624,50,50,3)
         
         # creation ADN
         if (dna == "null"):
@@ -23,7 +20,10 @@ class Individu:
         self.reseau.load(self.dna.data)
 
     def getFitness(self):
-        return (100*self.size + self.health)
+        return (100 * self.size + self.health)
+
+    def setFitness(self,nb):
+        self.size = nb
 
 
 
