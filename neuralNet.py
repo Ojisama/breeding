@@ -100,9 +100,3 @@ class NeuralNet(object):
 					k+=1
 
 
-
-
-
-
-
-
