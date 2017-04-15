@@ -15,20 +15,22 @@ class Pool():
         self.population = deque()
         for i in range(n):
             self.population.append(Individu())
-        self.mutationcoeff = 1/self.getFitnessMax()
+        self.mutationcoeff = 1/self.getFitnessMax()[0]
         self.trained = 0
+        self.min = 0
+        self.moy = 0
+        self.max = 0
 
     def breeding(self):
         if self.trained < 10:
-            print(self.population[self.trained])
-            tmp = self.trained
             self.trained+=1
-            return self.population[tmp]
+            return self.population[self.trained-1]
         else:
             # Creation du tableau de croisement
+            self.trained+=1
             tab = []
-            fitnessMax = self.getFitnessMax()
-            self.mutationcoeff = 1/self.getFitnessMax()
+            fitnessMax = self.getFitnessMax()[0]
+            self.mutationcoeff = 1/self.getFitnessMax()[0]
             for individu in self.population:
                 nb_apparition = int((individu.getFitness() * 100) / fitnessMax)
                 for i in range(nb_apparition):
@@ -41,8 +43,8 @@ class Pool():
             while(index1 == index2): # eviter d'avoir le meme index
                 index2 = random.randint(0,len(tab)-1)
             
-            print("index1 " + str(index1))
-            print("index2 " + str(index2))
+            #print("index1 " + str(index1))
+            #print("index2 " + str(index2))
             
             parent1 = tab[index1]
             parent2 = tab[index2]
@@ -56,13 +58,20 @@ class Pool():
             return enfant
         
 
+    def updateStatistics(self):
+        self.min = self.getFitnessMin()[0]
+        self.moy = self.getFitnessMoy()
+        self.max = self.getFitnessMax()[0]
+
     
     def getFitnessMax(self):
         fitnessMax = 0
-        for individu in self.population:
+        indexMax = 0
+        for i,individu in enumerate(self.population):
             if individu.getFitness() > fitnessMax:
                 fitnessMax = individu.getFitness()
-        return fitnessMax
+                indexMax = i
+        return [fitnessMax,i]
 
     def getFitnessMin(self):
         fitnessMin = 0
@@ -77,7 +86,7 @@ class Pool():
         somme = 0
         for individu in self.population:
             somme += individu.getFitness()
-        return somme/self.n
+        return somme/len(self.population)
 
     def __str__(self):
         string = ""
@@ -86,7 +95,7 @@ class Pool():
         return string
 
     
-
+"""
 #Tests
 
 # Test de la creation du tableau dans breeding
@@ -94,3 +103,4 @@ a = Pool(2)
 a.population[0].size = 11
 print(a.getFitnessMax())
 print(a.breeding())
+"""

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from collections import deque, namedtuple
-from pool import Pool
+from pool import *
 import random
 import pygame
 import select
@@ -16,7 +16,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-POOL_SIZE = 10
+POOL_SIZE = 100
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -40,7 +40,7 @@ class Snake(object):
         tailmax (int): taille du snake
         individu (individu): instance d'individu associée à l'instance de Snake
     """
-    def __init__(self, direction=DIRECTIONS.Right, point=(16, 16, (20,120,80)), color=(20,120,80), individuPool = None):
+    def __init__(self, direction=DIRECTIONS.Right, point=(16, 16, (20,120,80)), color=(20,120,80)):
         self.tailmax = 4
         self.direction = direction 
         self.deque = deque()
@@ -48,10 +48,7 @@ class Snake(object):
         self.color = color
         self.nextDir = deque()
         self.indexDirection = 2
-        if individuPool is None:
-            self.individu = Individu()
-        else:
-            self.individu = individuPool
+        self.individu = Individu()
     
     def __str__(self):
         return str(self.tailmax)
@@ -59,6 +56,9 @@ class Snake(object):
     def get_color(self):
         return (20,120,80)
     
+    def setIndividu(self, individuPool):
+        self.individu = individuPool
+
     def trad_direction(self, nv_dir):
         """Traduit la direction demandée (relative, 0:gauche, 1: en face 2:droite) 
         en direction absolue (N S W E)
@@ -280,13 +280,15 @@ def play(screen, pool):
     clock = pygame.time.Clock()
     spots = make_board()
     indexDirection = 0
-    snake = Snake() #Cette ligne fonctionne
-    #snake = Snake(pool.breeding()) 
-    """ La ligne du dessus ne fonctionne pas, le snake n'est qu'un carré et pas 4
-        du coup le mapping renvoie des inputs de mauvaise dimension (taille 2 au lieu de 11)
-        Je n'arrive pas à savoir où ça plante, puisque pool.breeding() doit renvoyer au départ
-        un individu random (Individu()), ce qui équivaut exactement à appeler Snake() sans param 
-        (cf init de Snake et breeding())"""
+
+    #______________________________________ SCRIPT DU BREEDING _____________________________
+
+    snake = Snake()
+    snake.setIndividu(pool.breeding())
+
+    #______________________________________ /SCRIPT DU BREEDING ____________________________
+    # PUTAING C BO LA SIMPLICITÉ
+
 
     # Board set up
     spots[0][0] = 1
@@ -307,10 +309,6 @@ def play(screen, pool):
 
         #____________________________ DECISION-MAKING _____________________________
 
-        """directionLoop = [0,1,1,1,1]
-        direction = snake.trad_direction(directionLoop[indexDirection%5])
-        indexDirection+=1
-        snake.populate_nextDir(direction)"""
         inp = mappingBis(spots, snake)
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
@@ -320,12 +318,17 @@ def play(screen, pool):
 
         # Game logic
         next_head = move(snake)
+        if snake.individu.decay():
+            pool.updateStatistics()
+            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = 0  || MORT NATURELLE || ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            return snake.tailmax
         if (end_condition(spots, next_head)):
-            print("Snake n°"+str(pool.trained))
+            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = "+str(snake.individu.health)+"  || CRASH DANS UN OBSTACLE || ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
             return snake.tailmax
 
         if is_food(spots, next_head):
             snake.tailmax += 4
+            snake.individu.eat()
             food = find_food(spots)
 
         snake.deque.append(next_head)
@@ -341,7 +344,6 @@ def play(screen, pool):
         pygame.display.update()
 
 def network_nextDir(indiv,inp):
-    print(inp)
     output=indiv.reseau.run(inp)
     def maxIndice(liste):
         indice=0
@@ -427,14 +429,10 @@ def game_over(screen, eaten):
                     return True
 #______________________________________ /SCRIPT DU JEU ________________________________
 
-#______________________________________ SCRIPT DU BREEDING _____________________________
 
-
-#______________________________________ /SCRIPT DU BREEDING ____________________________
 
 def main():
     pool = Pool(POOL_SIZE)
-    print(pool)
     pygame.init()
     screen = pygame.display.set_mode([BOARD_LENGTH * OFFSET,
         BOARD_LENGTH * OFFSET])
@@ -458,7 +456,6 @@ def main():
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
-    print(i)
     pygame.quit()
 
 if __name__ == "__main__":
