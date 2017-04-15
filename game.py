@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from collections import deque, namedtuple
-#import pool
+from pool import Pool
 import random
 import pygame
 import select
@@ -16,6 +16,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
+POOL_SIZE = 10
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -47,12 +48,14 @@ class Snake(object):
         self.color = color
         self.nextDir = deque()
         self.indexDirection = 2
-        """if individuPool is None:
-            pool = Pool(1)
-            self.individu = pool.population.pop()
-        else:"""
-        self.individu = Individu()
+        if individuPool is None:
+            self.individu = Individu()
+        else:
+            self.individu = individuPool
     
+    def __str__(self):
+        return str(self.tailmax)
+
     def get_color(self):
         return (20,120,80)
     
@@ -230,7 +233,7 @@ def menu(screen):
         pygame.quit()
         return 0
 
-def quit(screen):
+def quit(screen,pool):
     return False
 
 def move(snake):
@@ -273,11 +276,18 @@ def is_food(board, point):
 
 # Return false to quit program, true to go to
 # gameover screen
-def play(screen): 
+def play(screen, pool): 
     clock = pygame.time.Clock()
     spots = make_board()
     indexDirection = 0
-    snake = Snake()
+    snake = Snake() #Cette ligne fonctionne
+    #snake = Snake(pool.breeding()) 
+    """ La ligne du dessus ne fonctionne pas, le snake n'est qu'un carré et pas 4
+        du coup le mapping renvoie des inputs de mauvaise dimension (taille 2 au lieu de 11)
+        Je n'arrive pas à savoir où ça plante, puisque pool.breeding() doit renvoyer au départ
+        un individu random (Individu()), ce qui équivaut exactement à appeler Snake() sans param 
+        (cf init de Snake et breeding())"""
+
     # Board set up
     spots[0][0] = 1
     food = find_food(spots)
@@ -299,8 +309,9 @@ def play(screen):
 
         """directionLoop = [0,1,1,1,1]
         direction = snake.trad_direction(directionLoop[indexDirection%5])
-        indexDirection+=1"""
-        inp = mappingAvecMur(spots, snake)
+        indexDirection+=1
+        snake.populate_nextDir(direction)"""
+        inp = mappingBis(spots, snake)
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
         #____________________________ /DECISION-MAKING _____________________________
@@ -310,6 +321,7 @@ def play(screen):
         # Game logic
         next_head = move(snake)
         if (end_condition(spots, next_head)):
+            print("Snake n°"+str(pool.trained))
             return snake.tailmax
 
         if is_food(spots, next_head):
@@ -329,6 +341,7 @@ def play(screen):
         pygame.display.update()
 
 def network_nextDir(indiv,inp):
+    print(inp)
     output=indiv.reseau.run(inp)
     def maxIndice(liste):
         indice=0
@@ -417,10 +430,11 @@ def game_over(screen, eaten):
 #______________________________________ SCRIPT DU BREEDING _____________________________
 
 
-
 #______________________________________ /SCRIPT DU BREEDING ____________________________
 
 def main():
+    pool = Pool(POOL_SIZE)
+    print(pool)
     pygame.init()
     screen = pygame.display.set_mode([BOARD_LENGTH * OFFSET,
         BOARD_LENGTH * OFFSET])
@@ -437,7 +451,7 @@ def main():
 
         options = {0 : quit,
                 1 : play}
-        now = options[pick](screen)
+        now = options[pick](screen,pool)
         if now == False:
             break
         elif pick == 1 or pick == 2:

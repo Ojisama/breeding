@@ -8,7 +8,7 @@ class Individu:
         self.health = 99
         
         # creation reseau de neuronne de l'individu
-        self.reseau = NeuralNet(4624,50,50,3)
+        self.reseau = NeuralNet(11,6,6,3)
         
         # creation ADN
         if (dna == "null"):
@@ -25,7 +25,8 @@ class Individu:
     def setFitness(self,nb):
         self.size = nb
 
-
+    def __str__(self):
+        return str(self.size)+" / "+str(self.health)+" | "+str(self.dna)
 
 """indi = Individu()
 #print(indi.dna.data)

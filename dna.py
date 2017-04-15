@@ -35,6 +35,8 @@ class DNA():
             new_adn.data[i] = newcoeff 
         return(new_adn)
 
+    def __str__(self):
+        return str(len(self.data))
 
 """adn1 = DNA(5714020)
 adn2 = DNA(5714020)
