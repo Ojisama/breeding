@@ -99,6 +99,8 @@ def mappingBis(board, snake):
     snake.deque.append(temp)
     
     #Cherche les coordonnees de la pomme
+    X=0
+    Y=0
     for i in range(32): 
         stop = False
         for j in range(32):
