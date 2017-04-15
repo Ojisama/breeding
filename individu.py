@@ -4,7 +4,7 @@ from neuralNet import NeuralNet
 class Individu:
 
     def __init__ (self, dna = "null"):
-        self.size = 0
+        self.size = 1
         self.health = 65
         
         # creation reseau de neuronne de l'individu
