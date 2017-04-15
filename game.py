@@ -319,18 +319,17 @@ def play(screen, pool):
         # Game logic
         next_head = move(snake)
         if snake.individu.decay():
-            pool.updateStatistics()
-            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = 0  || MORT NATURELLE || ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
             return snake.tailmax
         if (end_condition(spots, next_head)):
-            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = "+str(snake.individu.health)+"  || CRASH DANS UN OBSTACLE || ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
             return snake.tailmax
 
         if is_food(spots, next_head):
             snake.tailmax += 4
             snake.individu.eat()
             food = find_food(spots)
-
+        pool.updateStatistics()
         snake.deque.append(next_head)
 
         if len(snake.deque) > snake.tailmax:

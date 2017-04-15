@@ -1,6 +1,7 @@
 from individu import Individu
 from collections import deque
 import random
+import sys
 
 class Pool():
 
@@ -20,14 +21,15 @@ class Pool():
         self.min = 0
         self.moy = 0
         self.max = 0
+        self.n = n
 
     def breeding(self):
-        if self.trained < 10:
-            self.trained+=1
+        #remplissage initial de la pool par entraînement des N premiers snakes
+        self.trained+=1
+        if self.trained < self.n+1:
             return self.population[self.trained-1]
         else:
             # Creation du tableau de croisement
-            self.trained+=1
             tab = []
             fitnessMax = self.getFitnessMax()[0]
             self.mutationcoeff = 1/self.getFitnessMax()[0]
@@ -74,7 +76,7 @@ class Pool():
         return [fitnessMax,i]
 
     def getFitnessMin(self):
-        fitnessMin = 0
+        fitnessMin = sys.maxsize
         position_individuMin = 0
         for i,individu in enumerate(self.population):
             if individu.getFitness() < fitnessMin:
@@ -86,11 +88,11 @@ class Pool():
         somme = 0
         for individu in self.population:
             somme += individu.getFitness()
-        return somme/len(self.population)
+        return somme/self.n
 
     def __str__(self):
         string = ""
-        for i in range(len(self.population)):
+        for i in range(self.n):
             string+=(str(self.trained)+" : "+str(self.population[i])+"\n")
         return string
 
