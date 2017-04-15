@@ -8,7 +8,7 @@ class Individu:
         self.health = 65
         
         # creation reseau de neuronne de l'individu
-        self.reseau = NeuralNet(11,6,6,3)
+        self.reseau = NeuralNet(1936,42,42,3)
         
         # creation ADN
         if (dna == "null"):

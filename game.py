@@ -10,8 +10,8 @@ from Mapping import *
 
 
 speed=150
-BOARD_LENGTH = 32
-OFFSET = 16
+BOARD_LENGTH = 20
+OFFSET = int(BOARD_LENGTH/2)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -40,7 +40,7 @@ class Snake(object):
         tailmax (int): taille du snake
         individu (individu): instance d'individu associée à l'instance de Snake
     """
-    def __init__(self, direction=DIRECTIONS.Right, point=(16, 16, (20,120,80)), color=(20,120,80)):
+    def __init__(self, direction=DIRECTIONS.Right, point=(OFFSET, OFFSET, (20,120,80)), color=(20,120,80)):
         self.tailmax = 4
         self.direction = direction 
         self.deque = deque()
@@ -309,7 +309,7 @@ def play(screen, pool):
 
         #____________________________ DECISION-MAKING _____________________________
 
-        inp = mappingBis(spots, snake)
+        inp = mappingAvecMur(spots, snake)
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
         #____________________________ /DECISION-MAKING _____________________________
