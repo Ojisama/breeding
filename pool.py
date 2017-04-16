@@ -16,7 +16,7 @@ class Pool():
         self.population = deque()
         for i in range(n):
             self.population.append(Individu())
-        self.mutationcoeff = 1/self.getFitnessMax()[0]
+        self.mutationcoeff = int((1/self.getFitnessMax()[0])/100)
         self.trained = 0
         self.min = 0
         self.moy = 0
@@ -32,7 +32,7 @@ class Pool():
             # Creation du tableau de croisement
             tab = []
             fitnessMax = self.getFitnessMax()[0]
-            self.mutationcoeff = 1/self.getFitnessMax()[0]
+            self.mutationcoeff = int((1/self.getFitnessMax()[0])/100)
             for individu in self.population:
                 nb_apparition = int((individu.getFitness() * 100) / fitnessMax)
                 for i in range(nb_apparition):

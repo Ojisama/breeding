@@ -4,11 +4,12 @@ from neuralNet import NeuralNet
 class Individu:
 
     def __init__ (self, dna = "null"):
-        self.size = 1
-        self.health = 65
+        self.size = 0
+        self.casesParcourues = 0
+        self.health = 99
         
         # creation reseau de neuronne de l'individu
-        self.reseau = NeuralNet(1936,42,42,3)
+        self.reseau = NeuralNet(11,7,7,3)
         
         # creation ADN
         if (dna == "null"):
@@ -26,6 +27,7 @@ class Individu:
         self.size = nb
 
     def decay(self):
+        self.casesParcourues+=1
         if self.health>1:
             self.health-=1
             return False
@@ -34,6 +36,7 @@ class Individu:
 
     def eat(self):
         self.size+=1
+        self.health = 99
 
     def __str__(self):
         return str(self.size)+" / "+str(self.health)+" | "+str(self.dna)

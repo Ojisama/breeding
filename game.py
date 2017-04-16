@@ -10,13 +10,13 @@ from Mapping import *
 
 
 speed=150
-BOARD_LENGTH = 20
+BOARD_LENGTH = 40
 OFFSET = int(BOARD_LENGTH/2)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-POOL_SIZE = 10
+POOL_SIZE = 100
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -309,7 +309,7 @@ def play(screen, pool):
 
         #____________________________ DECISION-MAKING _____________________________
 
-        inp = mappingAvecMur(spots, snake)
+        inp = mappingBis(spots, snake)
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
         #____________________________ /DECISION-MAKING _____________________________
