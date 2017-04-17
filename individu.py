@@ -4,8 +4,8 @@ from neuralNet import NeuralNet
 class Individu:
 
     def __init__ (self, dna = "null"):
-        self.size = 1
-        self.health = 65
+        self.size = 0
+        self.health = 32*4
         
         # creation reseau de neuronne de l'individu
         self.reseau = NeuralNet(11,6,6,3)
@@ -20,7 +20,7 @@ class Individu:
         self.reseau.load(self.dna.data)
 
     def getFitness(self):
-        return (100 * self.size + self.health)
+        return int(100 * self.size + self.health*25/32)
 
     def setFitness(self,nb):
         self.size = nb
