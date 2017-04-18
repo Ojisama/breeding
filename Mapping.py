@@ -97,6 +97,9 @@ def mappingBis(board, snake):
     head.append(temp[0])
     head.append(temp[1])
     snake.deque.append(temp)
+    currentDirection = snake.direction
+    xTete=head[0]
+    yTete=head[1]
     
     #Cherche les coordonnees de la pomme
     X=0
@@ -112,12 +115,14 @@ def mappingBis(board, snake):
         if stop:
              break
     
-    input.append(1-abs(head[0]-X)/BOARD_LENGTH)  #deltaX
-    input.append(1-abs(head[1]-Y)/BOARD_LENGTH)  #deltaY
-
-    currentDirection = snake.direction
-    xTete=head[0]
-    yTete=head[1]
+if currentDirection == DIRECTIONS.Up or currentDirection == DIRECTIONS.Down:
+        input.append(1-abs(teteX-X)/BOARD_LENGTH)  #deltaX
+        input.append(1-abs(teteY-Y)/BOARD_LENGTH)  #deltaY     
+else :
+        input.append(1-abs(teteY-X)/BOARD_LENGTH)  #deltaX
+        input.append(1-abs(teteX-Y)/BOARD_LENGTH)  #deltaY  
+        
+    
     x=xTete
     y=yTete
     trouve = False
