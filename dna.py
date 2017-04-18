@@ -5,7 +5,7 @@ class DNA():
     def __init__(self, taille):       
         self.data=[]
         for i in range(taille):
-            self.data.append(random.random())
+            self.data.append(random.random()*2-1)
 
     def crossover(self, ADN2, mutationcoeff):
         new_adn = DNA(len(self.data))
@@ -27,8 +27,8 @@ class DNA():
                     else:
                         newcoeff += changement
                 else:
-                    if (newcoeff - changement) < 0:
-                        newcoeff = 0
+                    if (newcoeff - changement) < -1:
+                        newcoeff = -1
                     else:
                         newcoeff -= changement
 

@@ -341,6 +341,257 @@ def mappingBis(board, snake):
     return input
         
     
+def mappingTer(board,snake):
+    BOARD_LENGTH=len(board)
+    input = []
+    
+    head=[]
+    temp = snake.deque.pop()
+    head.append(temp[0])
+    head.append(temp[1])
+    snake.deque.append(temp)
+    
+    #Cherche les coordonnees de la pomme
+    X=0
+    Y=0
+    for i in range(BOARD_LENGTH): 
+        stop = False
+        for j in range(BOARD_LENGTH):
+            if board[i][j]==2:
+                X=i
+                Y=j
+                stop=True
+                break
+        if stop:
+             break
+    
+    input.append(head[0]-X)  #deltaX
+    input.append(head[1]-Y)  #deltaY
+
+    currentDirection = snake.direction
+    xTete=head[0]
+    yTete=head[1]
+    x=xTete
+    y=yTete
+    trouve = False
+    
+    #Si dirige vers le haut
+    if currentDirection == DIRECTIONS.Up:
+    
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+        
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                distance = x-xTete
+                input+=[distance,0,0]
+            elif board[x][yTete]==2:
+                trouve = True
+                distance = x-xTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = x-xTete
+            input+=[0,0,distance]
+        x=xTete
+        trouve=False
+                
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+        
+    #Si dirige vers la droite
+    if currentDirection == DIRECTIONS.Right:
+        
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                distance = x-xTete
+                input+=[distance,0,0]
+            elif board[x][yTete]==2:
+                trouve = True
+                distance = x-xTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = x-xTete
+            input+=[0,0,distance]
+        x=xTete
+        trouve=False
+        
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+        
+        #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                distance = x-xTete
+                input+=[distance,0,0]
+            elif board[x][yTete]==2:
+                trouve = True
+                distance = x-xTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = x-xTete
+            input+=[0,0,distance]
+        x=xTete
+        trouve=False
+        
+    #Si dirige vers le bas
+    if currentDirection == DIRECTIONS.Down:
+        
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+        
+        #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                distance = x-xTete
+                input+=[distance,0,0]
+            elif board[x][yTete]==2:
+                trouve = True
+                distance = x-xTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = x-xTete
+            input+=[0,0,distance]
+        x=xTete
+        trouve=False
+        
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+        
+    #Si dirige vers la gauche
+    if currentDirection == DIRECTIONS.Left:
+        
+         #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                distance = x-xTete
+                input+=[distance,0,0]
+            elif board[x][yTete]==2:
+                trouve = True
+                distance = x-xTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = x-xTete
+            input+=[0,0,distance]
+        x=xTete
+        trouve=False
+        
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+        
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                distance = y-yTete
+                input+=[distance,0,0]
+            elif board[xTete][y]==2:
+                trouve = True
+                distance = y-yTete
+                input+=[0,distance,0]
+        if not trouve:
+            distance = y-yTete
+            input+=[0,0,distance]
+        y=yTete
+        trouve=False
+    
+    return input
     
         
         
