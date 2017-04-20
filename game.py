@@ -2,6 +2,7 @@
 
 from collections import deque, namedtuple
 from pool import *
+from timeit import default_timer as timer
 import random
 import pygame
 import select
@@ -11,12 +12,12 @@ from Mapping import *
 
 speed=150
 BOARD_LENGTH = 32
-OFFSET = 16
+OFFSET = int(BOARD_LENGTH/2)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-POOL_SIZE = 10
+POOL_SIZE = 100
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -40,7 +41,7 @@ class Snake(object):
         tailmax (int): taille du snake
         individu (individu): instance d'individu associée à l'instance de Snake
     """
-    def __init__(self, direction=DIRECTIONS.Right, point=(16, 16, (20,120,80)), color=(20,120,80)):
+    def __init__(self, direction=DIRECTIONS.Right, point=(OFFSET, OFFSET, (20,120,80)), color=(20,120,80)):
         self.tailmax = 4
         self.direction = direction 
         self.deque = deque()
@@ -341,6 +342,8 @@ def play(screen, pool):
         spots = update_board(screen, [snake], food)
 
         pygame.display.update()
+        # à décommenter pour afficher le Snake 
+        # MAIS environ 75% plus lent sur mappingBis 5000 itérations
 
 def network_nextDir(indiv,inp):
     output=indiv.reseau.run(inp)
@@ -441,6 +444,7 @@ def main():
     first = True
     playing = True
     i=0
+    start = timer()
     while playing:
         i+=1
         if first or pick == 3:
@@ -455,6 +459,10 @@ def main():
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
+    end = timer()
+    time = end-start
+    print(str(time))
+    print(str(time/i)+" ms par Snake")
     pygame.quit()
 
 if __name__ == "__main__":

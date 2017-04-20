@@ -15,15 +15,16 @@ class Pool():
     """
 
     def __init__(self, n):
+        self.n = n
         self.population = deque()
         for i in range(n):
             self.population.append(Individu())
-        self.mutationcoeff = 1/self.getFitnessMax()[0]
+        self.mutationcoeff = (10/self.getFitnessMoy())
         self.trained = 0
         self.min = 0
         self.moy = 0
         self.max = 0
-        self.n = n
+        
 
     def breeding(self):
         #remplissage initial de la pool par entraînement des N premiers snakes
@@ -34,7 +35,7 @@ class Pool():
             # Creation du tableau de croisement
             tab = []
             fitnessMax = self.getFitnessMax()[0]
-            self.mutationcoeff = 1/self.getFitnessMax()[0]
+            self.mutationcoeff = 0.1
             for individu in self.population:
                 nb_apparition = int((individu.getFitness() * 100) / fitnessMax)
                 for i in range(nb_apparition):
@@ -47,8 +48,6 @@ class Pool():
             while(index1 == index2): # eviter d'avoir le meme index
                 index2 = random.randint(0,len(tab)-1)
             
-            #print("index1 " + str(index1))
-            #print("index2 " + str(index2))
             
             parent1 = tab[index1]
             parent2 = tab[index2]

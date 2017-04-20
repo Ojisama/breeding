@@ -3,11 +3,16 @@
 from dna import DNA
 from neuralNet import NeuralNet
 
+HEALTH_MAX = 32*4
+DECAY_RATE = 1
+APPLE_REWARD = 100
+
 class Individu:
 
     def __init__ (self, dna = "null"):
-        self.size = 1
-        self.health = 65
+        self.size = 0
+        self.casesParcourues = 0
+        self.health = HEALTH_MAX
         
         # creation reseau de neuronne de l'individu
         self.reseau = NeuralNet(7,5,5,3)
@@ -22,20 +27,19 @@ class Individu:
         self.reseau.load(self.dna.data)
 
     def getFitness(self):
-        return (100 * self.size + self.health)
-
-    def setFitness(self,nb):
-        self.size = nb
+        return int(APPLE_REWARD * self.size + self.health*APPLE_REWARD/HEALTH_MAX)
 
     def decay(self):
+        self.casesParcourues+=1
         if self.health>1:
-            self.health-=1
+            self.health-=DECAY_RATE
             return False
         else:
             return True
 
     def eat(self):
         self.size+=1
+        self.health = HEALTH_MAX
 
     def __str__(self):
         return str(self.size)+" / "+str(self.health)+" | "+str(self.dna)
