@@ -116,12 +116,12 @@ def mappingBis(board, snake):
              break
     
     if currentDirection == DIRECTIONS.Up or currentDirection == DIRECTIONS.Down:
-            input.append(1-abs(xTete-X)/BOARD_LENGTH)  #deltaX
-            input.append(1-abs(yTete-Y)/BOARD_LENGTH)  #deltaY     
+        input.append(1-abs(xTete-X)/BOARD_LENGTH)  #deltaX
+        input.append(1-abs(yTete-Y)/BOARD_LENGTH)  #deltaY     
     else :
-            input.append(1-abs(yTete-X)/BOARD_LENGTH)  #deltaX
-            input.append(1-abs(xTete-Y)/BOARD_LENGTH)  #deltaY  
-            
+        input.append(1-abs(yTete-X)/BOARD_LENGTH)  #deltaX
+        input.append(1-abs(xTete-Y)/BOARD_LENGTH)  #deltaY  
+
         
     x=xTete
     y=yTete

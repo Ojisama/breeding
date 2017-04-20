@@ -46,8 +46,6 @@ class Pool():
             while(index1 == index2): # eviter d'avoir le meme index
                 index2 = random.randint(0,len(tab)-1)
             
-            #print("index1 " + str(index1))
-            #print("index2 " + str(index2))
             
             parent1 = tab[index1]
             parent2 = tab[index2]
