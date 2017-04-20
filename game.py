@@ -309,7 +309,7 @@ def play(screen, pool):
 
         #____________________________ DECISION-MAKING _____________________________
 
-        inp = mappingBis(spots, snake)
+        inp = mappingCarre(spots, snake)
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
         #____________________________ /DECISION-MAKING _____________________________

@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from individu import Individu
 from collections import deque
 import random
