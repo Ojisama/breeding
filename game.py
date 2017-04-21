@@ -9,8 +9,10 @@ import select
 from individu import Individu
 from Mapping import *
 
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-speed=150
+speed=15000
 BOARD_LENGTH = 32
 OFFSET = int(BOARD_LENGTH/2)
 WHITE = (255, 255, 255)
@@ -18,6 +20,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 POOL_SIZE = 100
+IHM = True
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -138,35 +141,39 @@ def end_condition(board, coord):
     return False
 
 def make_board():
-    spots = [[] for i in range(BOARD_LENGTH)]
-    for row in spots:
-        for i in range(BOARD_LENGTH):
-            row.append(0)
-    return spots
+    return [[0 for i in range(BOARD_LENGTH)] for i in range(BOARD_LENGTH)]
     
 
 def update_board(screen, snakes, food):
-    rect = pygame.Rect(0, 0, OFFSET, OFFSET)
-
-    spots = [[] for i in range(BOARD_LENGTH)]
-    num1 = 0
-    num2 = 0
-    for row in spots:
-        for i in range(BOARD_LENGTH):
-            row.append(0)
-            temprect = rect.move(num1 * OFFSET, num2 * OFFSET)
-            pygame.draw.rect(screen, BLACK, temprect)
-            num2 += 1
-        num1 += 1
-    spots[food[0]][food[1]] = 2
-    temprect = rect.move(food[1] * OFFSET, food[0] * OFFSET)
-    pygame.draw.rect(screen, rand_color(), temprect)
-    for snake in snakes:
-        for coord in snake.deque:
-            spots[coord[0]][coord[1]] = 1
-            temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
-            pygame.draw.rect(screen, coord[2], temprect)
-    return spots
+    if IHM:
+        rect = pygame.Rect(0, 0, OFFSET, OFFSET)
+    
+        spots = [[] for i in range(BOARD_LENGTH)]
+        num1 = 0
+        num2 = 0
+        for row in spots:
+            for i in range(BOARD_LENGTH):
+                row.append(0)
+                temprect = rect.move(num1 * OFFSET, num2 * OFFSET)
+                pygame.draw.rect(screen, BLACK, temprect)
+                num2 += 1
+            num1 += 1
+        spots[food[0]][food[1]] = 2
+        temprect = rect.move(food[1] * OFFSET, food[0] * OFFSET)
+        pygame.draw.rect(screen, rand_color(), temprect)
+        for snake in snakes:
+            for coord in snake.deque:
+                spots[coord[0]][coord[1]] = 1
+                temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
+                pygame.draw.rect(screen, coord[2], temprect)
+        return spots
+    else:
+        spots=make_board()
+        spots[food[0]][food[1]] = 2
+        for snake in snakes:
+            for coord in snake.deque:
+                spots[coord[0]][coord[1]] = 1
+        return spots
 
 def get_color(s):
     if s == "bk":
@@ -320,14 +327,20 @@ def play(screen, pool):
         # Game logic
         next_head = move(snake)
         if snake.individu.decay():
-            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            #print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
             return snake.tailmax
+        
         if (end_condition(spots, next_head)):
-            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            #print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
             return snake.tailmax
-
+        
+        
+        
+        
         if is_food(spots, next_head):
-            snake.tailmax += 4
+            snake.tailmax += 1
             snake.individu.eat()
             food = find_food(spots)
         pool.updateStatistics()
@@ -446,9 +459,10 @@ def main():
     i=0
     start = timer()
     while playing:
+        
         i+=1
         if first or pick == 3:
-            pick = menu(screen)
+            pick = 1
 
         options = {0 : quit,
                 1 : play}
