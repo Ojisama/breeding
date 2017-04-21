@@ -20,7 +20,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 POOL_SIZE = 100
-IHM = True
+IHM = False
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -190,33 +190,6 @@ def get_color(s):
         print("WHAT", s)
         return BLUE
 
-def update_board_delta(screen, deltas):
-    # accepts a queue of deltas in the form
-    # [("d", 13, 30), ("a", 4, 6, "rd")]
-    # valid colors: re, wh, bk, bl
-    rect = pygame.Rect(0, 0, OFFSET, OFFSET)
-    change_list = []
-    delqueue = deque()
-    addqueue = deque()
-    while len(deltas) != 0:
-        d = deltas.pop()
-        change_list.append(pygame.Rect(d[1], d[2], OFFSET, OFFSET))
-        if d[0] == "d":
-            delqueue.append((d[1], d[2]))
-        elif d[0] == "a":
-            addqueue.append((d[1], d[2], get_color(d[3])))
-    
-    for d_coord in delqueue:
-        temprect = rect.move(d_coord[1] * OFFSET, d_coord[0] * OFFSET)
-        # TODO generalize background color
-        pygame.draw.rect(screen, BLACK, temprect)
-
-    for a_coord in addqueue:
-        temprect = rect.move(a_coord[1] * OFFSET, a_coord[0] * OFFSET)
-        pygame.draw.rect(screen, a_coord[2], temprect)
-
-    return change_list
-
 # Return 0 to exit the program, 1 for a one-player game
 def menu(screen):
     font = pygame.font.Font(None, 30)
@@ -370,47 +343,6 @@ def network_nextDir(indiv,inp):
         return indice
     return maxIndice(output)
     
-
-def encode_deltas(delta_str):
-    # delta_str is in the form
-    # "(15 23 bk)(22 12 fo)(10 11 rm)"
-    deltas = deque()
-    state = "open"
-    while len(delta_str) != 0:
-        if state == "open":
-            encoded_delta = ["fx", 0, 0, "fx"]
-            delta_str = delta_str[1:]
-            on_num = 1
-            store_val = ""
-            state = "num"
-        if state == "num":
-            if delta_str[0] == " ":
-                delta_str = delta_str[1:]
-                encoded_delta[on_num] = int(store_val)
-                store_val = ""
-                on_num += 1
-                if on_num > 2:
-                    state = "color"
-            else:
-                store_val += delta_str[0]
-                delta_str = delta_str[1:]
-        if state == "color":
-            if delta_str[0] == ")":
-                if store_val == "rm":
-                    encoded_delta[0] = "d"
-                elif store_val == "fo":
-                    encoded_delta[0] = "a"
-                    encoded_delta[3] = "fo"
-                else:
-                    encoded_delta[0] = "a"
-                    encoded_delta[3] = store_val
-                delta_str = delta_str[1:]
-                state = "open"
-                deltas.appendleft(encoded_delta)
-            else:
-                store_val += delta_str[0]
-                delta_str = delta_str[1:]
-    return deltas
                 
 
 def game_over(screen, eaten):
