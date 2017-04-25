@@ -349,7 +349,7 @@ def network_nextDir(indiv,inp):
 def sauvegarder(pool, fileName):
     with open(fileName,"w") as file:
         writer = csv.writer(file)
-        for i in range(pool.getTaille()):
+        for i in range(pool.n):
             writer.writerows([pool.population[i].dna.data])
             writer.writerow([pool.population[i].size])
         file.close()
