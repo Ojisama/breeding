@@ -8,6 +8,9 @@ import pygame
 import select
 from individu import Individu
 from Mapping import *
+import csv
+import sys
+import matplotlib.pyplot as plt
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -342,6 +345,30 @@ def network_nextDir(indiv,inp):
                 max = liste[i]
         return indice
     return maxIndice(output)
+
+def sauvegarder(pool, fileName):
+    with open(fileName,"w") as file:
+        writer = csv.writer(file)
+        for i in range(pool.getTaille()):
+            writer.writerows([pool.population[i].dna.data])
+            writer.writerow([pool.population[i].size])
+        file.close()
+
+def charger(fileName):
+    i=0
+    pool=Pool(POOL_SIZE)
+    pool.trained=POOL_SIZE
+    cr = csv.reader(open(fileName,"rU"))
+    for row in cr:       
+        if len(row)==1:
+            pool.population[i].size=int(row[0])
+            i+=1
+        elif len(row)>1:
+            pool.population[i] = Individu()
+            for j in range(pool.population[i].reseau.sizeTotale()):
+                pool.population[i].dna.data[j]=float(row[j])
+
+    return pool
     
                 
 
@@ -380,6 +407,7 @@ def game_over(screen, eaten):
 
 def main():
     pool = Pool(POOL_SIZE)
+    #pool = charger('out.csv')
     pygame.init()
     screen = pygame.display.set_mode([BOARD_LENGTH * OFFSET,
         BOARD_LENGTH * OFFSET])
@@ -390,6 +418,9 @@ def main():
     playing = True
     i=0
     start = timer()
+    numSnake = []
+    avgFitness = []
+    maxFitness = []
     while playing:
         
         i+=1
@@ -405,6 +436,18 @@ def main():
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
+        if pool.trained%50 == 0:
+            numSnake.append(i)
+            avgFitness.append(pool.getFitnessMoy())
+            maxFitness.append(pool.getFitnessMax()[0])
+    
+    plt.plot(numSnake, avgFitness, label="Fitness moyen")
+    plt.plot(numSnake, maxFitness, label="Fitness max")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.ylabel('Fitness')
+    plt.xlabel("Nombre de snakes")
+    plt.show()
+    sauvegarder(pool,'out.csv')
     end = timer()
     time = end-start
     print(str(time))
