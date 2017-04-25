@@ -652,25 +652,149 @@ def mappingCarre(board, snake):
         y=yTete
         trouve=False
         
-        #A droite
-        while y<BOARD_LENGTH-1 and not trouve:
-            y+=1
-            if board[xTete][y]==1:
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
                 trouve = True
-                distance = 1-(abs(y-yTete)/BOARD_LENGTH)
+                distance = 1-(abs(x-xTete)/BOARD_LENGTH)
                 input+=[distance]
         if not trouve:
-            distance = 1-(abs(y-yTete)/BOARD_LENGTH)
+            distance = 1-(abs(x-xTete)/BOARD_LENGTH)
             input+=[distance]
-        y=yTete
+        x=xTete
         trouve=False
     
     return input
         
+
+def mappingQLearning(board,snake):
+    BOARD_LENGTH=len(board)
+    currentDirection = snake.direction
+    input = []
+    head=[]
+    temp = snake.deque.pop()
+    head.append(temp[0])
+    head.append(temp[1])
+    snake.deque.append(temp)
+
+    #Cherche les coordonnees de la pomme
+    Xpomme=0
+    Ypomme=0
+    for i in range(BOARD_LENGTH): 
+        stop = False
+        for j in range(BOARD_LENGTH):
+            if board[i][j]==2:
+                Xpomme=i
+                Ypomme=j
+                stop=True
+                break
+        if stop:
+             break
     
-    
+    XRelatif = head[0]-Xpomme  #X Relatif
+    YRelatif = head[1]-Ypomme  #Y Relatif
+
+    input.append(XRelatif)
+    input.append(YRelatif)
+
+    if currentDirection==DIRECTIONS.Left :
+        if head[0]==0 or board[head[0]-1][head[1]] == 1:
+            input.append(0)
+        elif board[head[0]-1][head[1]] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[1]+1 ==  BOARD_LENGTH or board[head[0]][head[1]-1] == 1:
+            input.append(0)
+        elif board[head[0]][head[1]-1] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[1]-1 ==  0 or board[head[0]][head[1]+1] == 1:
+            input.append(0)
+        elif board[head[0]][head[1]+1] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        return input
+
+    if currentDirection==DIRECTIONS.Right :
+        if head[0]+1==BOARD_LENGTH or board[head[0]+1][head[1]] == 1:
+            input.append(0)
+        elif board[head[0]+1][head[1]] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[1] ==  0 or board[head[0]][head[1]-1] == 1:
+            input.append(0)
+        elif board[head[0]][head[1]+1] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[1]+1 ==  BOARD_LENGTH or board[head[0]][head[1]+1] == 1:
+            input.append(0)
+        elif board[head[0]][head[1]-1] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        return input
+
+    if currentDirection==DIRECTIONS.Up :
+        if head[1]==0 or board[head[0]][head[1]-1] == 1:
+            input.append(0)
+        elif board[head[0]][head[1]-1] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[0] ==  0 or board[head[0]-1][head[1]] == 1:
+            input.append(0)
+        elif board[head[0]-1][head[1]] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[0]+1 ==  BOARD_LENGTH or board[head[0]+1][head[1]] == 1:
+            input.append(0)
+        elif board[head[0]+1][head[1]] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        return input
+
+    if currentDirection==DIRECTIONS.Down :
+        if head[1]+1==BOARD_LENGTH or board[head[0]][head[1]+1] == 1:
+            input.append(0)
+        elif board[head[0]][head[1]+1] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[0]+1 ==  BOARD_LENGTH or board[head[0]+1][head[1]] == 1:
+            input.append(0)
+        elif board[head[0]+1][head[1]] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        if head[0] ==  0 or board[head[0]-1][head[1]] == 1:
+            input.append(0)
+        elif board[head[0]-1][head[1]] == 2:
+            input.append(2)
+        else:
+            input.append(1)
+
+        return input
         
-        
+
     
 
         

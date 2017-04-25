@@ -95,3 +95,6 @@ ENV/
 
 # mkdocs documentation
 /site
+
+#breeding specific
+*.csv
