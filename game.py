@@ -338,7 +338,7 @@ def play(screen, pool):
         # Draw code
         screen.fill(BLACK)  # makes screen black
 
-        spots = update_board(screen, [snake], food)
+        spots = update_board(screen, [snake], food, pool)
 
         pygame.display.update()
         # à décommenter pour afficher le Snake 
