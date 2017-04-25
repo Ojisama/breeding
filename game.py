@@ -293,7 +293,7 @@ def play(screen, pool):
 
         #____________________________ DECISION-MAKING _____________________________
 
-        inp = mappingCarre(spots, snake)
+        inp = encoreUnMapping(spots, snake)
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
 
         #____________________________ /DECISION-MAKING _____________________________
