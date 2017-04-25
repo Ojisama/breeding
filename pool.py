@@ -21,6 +21,7 @@ class Pool():
             self.population.append(Individu())
         self.mutationcoeff = (10/self.getFitnessMoy())
         self.trained = 0
+        self.generation = 0
         self.min = 0
         self.moy = 0
         self.max = 0
@@ -29,6 +30,11 @@ class Pool():
     def breeding(self):
         #remplissage initial de la pool par entraînement des N premiers snakes
         self.trained+=1
+
+        # actualisation du numero de la generation
+        if (self.trained % self.n == 0) :
+            self.generation += 1
+        
         if self.trained < self.n+1:
             return self.population[self.trained-1]
         else:
@@ -47,7 +53,6 @@ class Pool():
             
             while(index1 == index2): # eviter d'avoir le meme index
                 index2 = random.randint(0,len(tab)-1)
-            
             
             parent1 = tab[index1]
             parent2 = tab[index2]
