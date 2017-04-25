@@ -147,7 +147,7 @@ def make_board():
     return [[0 for i in range(BOARD_LENGTH)] for i in range(BOARD_LENGTH)]
     
 
-def update_board(screen, snakes, food):
+def update_board(screen, snakes, food, pool):
     if IHM:
         rect = pygame.Rect(0, 0, OFFSET, OFFSET)
     
@@ -169,6 +169,16 @@ def update_board(screen, snakes, food):
                 spots[coord[0]][coord[1]] = 1
                 temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
                 pygame.draw.rect(screen, coord[2], temprect)
+
+        # Faire l'affichage des statistiques de la pool
+        font = pygame.font.Font(None, 15)
+        message_generation = font.render("Generation : " + str(pool.generation), True, WHITE)
+        message_maxFitness = font.render("Fitness Max : " + str(pool.getFitnessMax()[0]), True, WHITE)
+        message_avgFitness = font.render("Fitness Moyen : " + str(pool.getFitnessMoy()), True, WHITE)
+        screen.blit(message_generation, (10, 20)) 
+        screen.blit(message_maxFitness, (10, 35))  
+        screen.blit(message_avgFitness, (10, 50)) 
+
         return spots
     else:
         spots=make_board()
