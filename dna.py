@@ -21,18 +21,12 @@ class DNA():
                 #print("mutation au rang " + str(i))
             
                 hasard = random.randint(0,1)
-                changement = newcoeff*0.15
+                changement = random.random()
 
                 if hasard == 0:
-                    if (newcoeff + changement) > 1:
-                        newcoeff = 1
-                    else:
-                        newcoeff += changement
+                    newcoeff += changement
                 else:
-                    if (newcoeff - changement) < -1:
-                        newcoeff = -1
-                    else:
-                        newcoeff -= changement
+                    newcoeff -= changement
 
             new_adn.data[i] = newcoeff 
         return(new_adn)

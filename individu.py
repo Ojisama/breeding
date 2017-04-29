@@ -43,7 +43,3 @@ class Individu:
 
     def __str__(self):
         return str(self.size)+" / "+str(self.health)+" | "+str(self.dna)
-
-"""indi = Individu()
-#print(indi.dna.data)
-print(len(indi.dna.data))"""
