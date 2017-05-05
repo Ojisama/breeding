@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-speed=15000
+speed=500000
 BOARD_LENGTH = 32
 OFFSET = int(BOARD_LENGTH/2)
 WHITE = (255, 255, 255)
@@ -360,9 +360,27 @@ def sauvegarder(pool, fileName):
     with open(fileName,"w") as file:
         writer = csv.writer(file)
         for i in range(pool.n):
-            writer.writerows([pool.population[i].dna.data])
+            writer.writerow([pool.population[i].dna.data])
             writer.writerow([pool.population[i].size])
+            writer.writerow([pool.population[i].getFitness()])
         file.close()
+
+def sauvegarder_statistiques(pool, fileName, numSnake, fitnessAvg, fitnessMax):
+    with open(fileName,"w") as file:
+        writer = csv.writer(file)
+    
+        writer.writerow([numSnake])
+        writer.writerow([fitnessAvg])
+        writer.writerow([fitnessMax])
+        file.close()
+
+def graphique_fitness(numSnake, avgFitness, maxFitness):
+    plt.plot(numSnake, avgFitness, label="Fitness moyen")
+    plt.plot(numSnake, maxFitness, label="Fitness max")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.ylabel('Fitness')
+    plt.xlabel("Nombre de snakes")
+    plt.show()
 
 def charger(fileName):
     i=0
@@ -431,6 +449,7 @@ def main():
     numSnake = []
     avgFitness = []
     maxFitness = []
+
     while playing:
         
         i+=1
@@ -446,18 +465,16 @@ def main():
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
-        if pool.trained%50 == 0:
-            numSnake.append(i)
-            avgFitness.append(pool.getFitnessMoy())
-            maxFitness.append(pool.getFitnessMax()[0])
+        
+        numSnake.append(i)
+        avgFitness.append(pool.getFitnessMoy())
+        maxFitness.append(pool.getFitnessMax()[0])
+   
+        if pool.trained == 2000:
+            graphique_fitness(numSnake, avgFitness, maxFitness)
     
-    plt.plot(numSnake, avgFitness, label="Fitness moyen")
-    plt.plot(numSnake, maxFitness, label="Fitness max")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    plt.ylabel('Fitness')
-    plt.xlabel("Nombre de snakes")
-    plt.show()
-    sauvegarder(pool,'out.csv')
+    #sauvegarder(pool,'mappingBis_5.csv')
+    #sauvegarder_statistiques(pool,'statistique_mappingBis_5.csv', numSnake, avgFitness, maxFitness)
     end = timer()
     time = end-start
     print(str(time))
