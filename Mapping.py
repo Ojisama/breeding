@@ -1090,25 +1090,6 @@ def MappingExponentiel(board, snake):
             input+=[dist]
         y=yTete
         trouve=False
-
-        #Input Mur
-        #A gauche
-        if yTete==0 or board[xTete][yTete-1]==1:
-            input.append(1)
-        else:
-            input.append(0)
-        
-        #En haut
-        if xTete==0 or board[xTete-1][yTete]==1:
-            input.append(1)
-        else:
-            input.append(0)
-                
-        #A droite
-        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
-            input.append(1)
-        else:
-            input.append(0)
         
     #Si dirige vers la droite
     if currentDirection == DIRECTIONS.Right:
@@ -1170,25 +1151,6 @@ def MappingExponentiel(board, snake):
             input+=[dist]
         x=xTete
         trouve=False
-        
-        #InputMur
-        #En haut
-        if xTete==0 or board[xTete-1][yTete]==1:
-            input.append(1)
-        else:
-            input.append(0)
-                
-        #A droite
-        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
-            input.append(1)
-        else:
-            input.append(0)
-        
-        #En bas
-        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
-            input.append(1)
-        else:
-            input.append(0)
 
     #Si dirige vers le bas
     if currentDirection == DIRECTIONS.Down:
@@ -1251,25 +1213,6 @@ def MappingExponentiel(board, snake):
             input+=[dist]
         y=yTete
         trouve=False
-            
-        #InputMur
-        #A droite
-        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
-            input.append(1)
-        else:
-            input.append(0)
-            
-        #En bas
-        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
-            input.append(1)
-        else:
-            input.append(0)
-        
-        #A gauche
-        if yTete==0 or board[xTete][yTete-1]==1:
-            input.append(1)
-        else:
-            input.append(0)
         
     #Si dirige vers la gauche
     if currentDirection == DIRECTIONS.Left:
@@ -1333,25 +1276,6 @@ def MappingExponentiel(board, snake):
             input+=[dist]
         x=xTete
         trouve=False
-
-        #InputMur
-        #En bas
-        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
-            input.append(1)
-        else:
-            input.append(0)
-        
-        #A gauche
-        if yTete==0 or board[xTete][yTete-1]==1:
-            input.append(1)
-        else:
-            input.append(0)
-        
-        #En haut
-        if xTete==0 or board[xTete-1][yTete]==1:
-            input.append(1)
-        else:
-            input.append(0)
     
     return input
     
