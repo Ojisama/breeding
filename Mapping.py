@@ -6,7 +6,8 @@ from collections import deque, namedtuple
 DIRECTIONS = namedtuple('DIRECTIONS',
         ['Up', 'Down', 'Left', 'Right'])(0, 1, 2, 3)
 
-
+def expo(x):
+    return ((exp(-x)-exp(-32))/(exp(-1)-exp(-32)))
 
 #renvoie un tableau de taille 34*34*4 correspondant aux inputs du rĂŠseau de neurones Ă  partir du board
 #parcours de la grille dans le sens de la lecture
@@ -993,7 +994,723 @@ def encoreUnMapping(board, snake):
     return input
     
 
+
+
+def MappingExponentiel(board, snake):
+    BOARD_LENGTH=len(board)
+    input = []
+    
+    head=[]
+    temp = snake.deque.pop()
+    head.append(temp[0])
+    head.append(temp[1])
+    snake.deque.append(temp)
+
+    #Cherche les coordonnees de la pomme
+    X=0
+    Y=0
+    for i in range(BOARD_LENGTH): 
+        stop = False
+        for j in range(BOARD_LENGTH):
+            if board[i][j]==2:
+                X=i
+                Y=j
+                stop=True
+                break
+        if stop:
+             break
+    
+    XRelatif = head[0]-X  #X Relatif
+    YRelatif = head[1]-Y  #Y Relatif
+
+    currentDirection = snake.direction
+    xTete=head[0]
+    yTete=head[1]
+    x=xTete
+    y=yTete
+    distance=1
+    trouve = False
+    #Si dirige vers le haut
+    if currentDirection == DIRECTIONS.Up:
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[distance,0,0,0]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[distance,distance,0,0]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[0,distance,0,0]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[0,distance,distance,0]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[0,0,distance,0]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[0,0,distance,distance]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[0,0,0,distance]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[distance,0,0,distance]
+
+        #Création des 3 inputs
+
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = expo(abs(y-yTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(y-yTete))
+            input+=[dist]
+        y=yTete
+        trouve=False
         
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = expo(abs(x-xTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(x-xTete))
+            input+=[dist]
+        x=xTete
+        trouve=False
+                
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = expo(abs(y-yTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(y-yTete))
+            input+=[dist]
+        y=yTete
+        trouve=False
+
+        #Input Mur
+        #A gauche
+        if yTete==0 or board[xTete][yTete-1]==1:
+            input.append(1)
+        else:
+            input.append(0)
         
+        #En haut
+        if xTete==0 or board[xTete-1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+                
+        #A droite
+        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+    #Si dirige vers la droite
+    if currentDirection == DIRECTIONS.Right:
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[0,0,0,distance]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[distance,0,0,distance]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[distance,0,0,0]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[distance,distance,0,0]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[0,distance,0,0]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[0,distance,distance,0]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[0,0,distance,0]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[0,0,distance,distance]
+
+        #Création des 3 inputs
+
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = expo(abs(x-xTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(x-xTete))
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = expo(abs(y-yTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(y-yTete))
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = expo(abs(x-xTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(x-xTete))
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #InputMur
+        #En haut
+        if xTete==0 or board[xTete-1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+                
+        #A droite
+        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #En bas
+        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+
+    #Si dirige vers le bas
+    if currentDirection == DIRECTIONS.Down:
+        
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[0,0,distance,0]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[0,0,distance,distance]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[0,0,0,distance]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[distance,0,0,distance]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[distance,0,0,0]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[distance,distance,0,0]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[0,distance,0,0]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[0,distance,distance,0]
+
+        #Création des 3 inputs
+
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = expo(abs(y-yTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(y-yTete))
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = expo(abs(x-xTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(x-xTete))
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = expo(abs(y-yTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(y-yTete))
+            input+=[dist]
+        y=yTete
+        trouve=False
+            
+        #InputMur
+        #A droite
+        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+            
+        #En bas
+        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #A gauche
+        if yTete==0 or board[xTete][yTete-1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+    #Si dirige vers la gauche
+    if currentDirection == DIRECTIONS.Left:
+        
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[0,distance,0,0]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[0,distance,distance,0]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[0,0,distance,0]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[0,0,distance,distance]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[0,0,0,distance]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[distance,0,0,distance]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[distance,0,0,0]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[distance,distance,0,0]
+
+        #Création des 3 inputs
+
+
+         #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = expo(abs(x-xTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(x-xTete))
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = expo(abs(y-yTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(y-yTete))
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = expo(abs(x-xTete))
+                input+=[dist]
+        if not trouve:
+            dist = expo(abs(x-xTete))
+            input+=[dist]
+        x=xTete
+        trouve=False
+
+        #InputMur
+        #En bas
+        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #A gauche
+        if yTete==0 or board[xTete][yTete-1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #En haut
+        if xTete==0 or board[xTete-1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+    
+    return input
     
     
+def MappingHybride(board, snake):
+    BOARD_LENGTH=len(board)
+    input = []
+    
+    head=[]
+    temp = snake.deque.pop()
+    head.append(temp[0])
+    head.append(temp[1])
+    snake.deque.append(temp)
+
+    #Cherche les coordonnees de la pomme
+    X=0
+    Y=0
+    for i in range(BOARD_LENGTH): 
+        stop = False
+        for j in range(BOARD_LENGTH):
+            if board[i][j]==2:
+                X=i
+                Y=j
+                stop=True
+                break
+        if stop:
+             break
+    
+    XRelatif = head[0]-X  #X Relatif
+    YRelatif = head[1]-Y  #Y Relatif
+
+    currentDirection = snake.direction
+    xTete=head[0]
+    yTete=head[1]
+    x=xTete
+    y=yTete
+    distance=1
+    trouve = False
+    #Si dirige vers le haut
+    if currentDirection == DIRECTIONS.Up:
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[distance,0,0,0]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[distance,distance,0,0]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[0,distance,0,0]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[0,distance,distance,0]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[0,0,distance,0]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[0,0,distance,distance]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[0,0,0,distance]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[distance,0,0,distance]
+
+        #Création des 3 inputs
+
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+            input+=[dist]
+        x=xTete
+        trouve=False
+                
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+            input+=[dist]
+        y=yTete
+        trouve=False
+
+        #Input Mur
+        #A gauche
+        if yTete==0 or board[xTete][yTete-1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #En haut
+        if xTete==0 or board[xTete-1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+                
+        #A droite
+        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+    #Si dirige vers la droite
+    if currentDirection == DIRECTIONS.Right:
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[0,0,0,distance]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[distance,0,0,distance]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[distance,0,0,0]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[distance,distance,0,0]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[0,distance,0,0]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[0,distance,distance,0]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[0,0,distance,0]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[0,0,distance,distance]
+
+        #Création des 3 inputs
+
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #InputMur
+        #En haut
+        if xTete==0 or board[xTete-1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+                
+        #A droite
+        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #En bas
+        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+
+    #Si dirige vers le bas
+    if currentDirection == DIRECTIONS.Down:
+        
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[0,0,distance,0]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[0,0,distance,distance]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[0,0,0,distance]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[distance,0,0,distance]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[distance,0,0,0]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[distance,distance,0,0]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[0,distance,0,0]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[0,distance,distance,0]
+
+        #Création des 3 inputs
+
+        #A droite
+        while y<BOARD_LENGTH-1 and not trouve:
+            y+=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+            input+=[dist]
+        y=yTete
+        trouve=False
+            
+        #InputMur
+        #A droite
+        if yTete==BOARD_LENGTH-1 or board[xTete][yTete+1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+            
+        #En bas
+        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #A gauche
+        if yTete==0 or board[xTete][yTete-1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+    #Si dirige vers la gauche
+    if currentDirection == DIRECTIONS.Left:
+        
+        #Création des 4 inputs
+        if (XRelatif<0 and YRelatif<0):
+            input+=[0,distance,0,0]
+        elif (XRelatif<0 and YRelatif==0):
+            input+=[0,distance,distance,0]
+        elif (XRelatif<0 and YRelatif>0):
+            input+=[0,0,distance,0]
+        elif (XRelatif==0 and YRelatif>0):
+            input+=[0,0,distance,distance]
+        elif (XRelatif>0 and YRelatif>0):
+            input+=[0,0,0,distance]
+        elif (XRelatif>0 and YRelatif==0):
+            input+=[distance,0,0,distance]
+        elif (XRelatif>0 and YRelatif<0):
+            input+=[distance,0,0,0]
+        elif (XRelatif==0 and YRelatif<0):
+            input+=[distance,distance,0,0]
+
+        #Création des 3 inputs
+
+
+         #En bas
+        while x<BOARD_LENGTH-1 and not trouve:
+            x+=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+            input+=[dist]
+        x=xTete
+        trouve=False
+        
+        #A gauche
+        while y>=0 and not trouve:
+            y-=1
+            if board[xTete][y]==1:
+                trouve = True
+                dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(y-yTete))/BOARD_LENGTH)
+            input+=[dist]
+        y=yTete
+        trouve=False
+        
+        #En haut
+        while x>=0 and not trouve:
+            x-=1
+            if board[x][yTete]==1:
+                trouve = True
+                dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+                input+=[dist]
+        if not trouve:
+            dist = (1-(abs(x-xTete))/BOARD_LENGTH)
+            input+=[dist]
+        x=xTete
+        trouve=False
+
+        #InputMur
+        #En bas
+        if xTete==BOARD_LENGTH-1 or board[xTete+1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #A gauche
+        if yTete==0 or board[xTete][yTete-1]==1:
+            input.append(1)
+        else:
+            input.append(0)
+        
+        #En haut
+        if xTete==0 or board[xTete-1][yTete]==1:
+            input.append(1)
+        else:
+            input.append(0)
+    
+    return input
