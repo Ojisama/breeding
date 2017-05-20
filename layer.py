@@ -2,6 +2,7 @@
 
 import numpy as np
 import math
+import random
 
 class Layer(object):
 
@@ -37,3 +38,11 @@ class Layer(object):
 		if(self.prev is None):
 			return ("-------BEGINNING OF INPUT LAYER: ---------------\nInput Layer \nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF INPUT LAYER-------------")
 		return ("-------BEGINNING OF LAYER: "+self.name+" ---------------\nInput \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF LAYER: "+self.name+"-------------")
+def randomiim():
+	return random.randrange(10)
+
+def __main__():
+	for i in range(10):
+		print(randomiim())
+
+#__main__()
