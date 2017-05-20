@@ -14,7 +14,7 @@ import sys
 import matplotlib.pyplot as plt
 
 import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
 speed=100
 BOARD_LENGTH = 32
@@ -36,7 +36,7 @@ DIRECTIONS = namedtuple('DIRECTIONS',
 
 
 def rand_start():
-    return (random.randrange(BOARD_LENGTH)|1, random.randrange(BOARD_LENGTH)&16|1, rand_color())
+    return (random.randrange(BOARD_LENGTH)|2, (random.randrange(BOARD_LENGTH)&16)|2, rand_color())
 
 def rand_color():
     return (random.randrange(254)|64, random.randrange(254)|64, random.randrange(254)|64)
@@ -79,7 +79,7 @@ class Snake(object):
             leftSide = False
             self.individu.eat()
             self.hasPackage = 1
-            self.color = (100,0,0)
+            self.color = RED
 
     def deposit(self):
         global leftSide
@@ -87,7 +87,7 @@ class Snake(object):
             leftSide = True
             self.individu.eat()
             self.hasPackage = 0
-            self.color = (20,120,80)
+            self.color = WHITE
 
 
     def trad_direction(self, nv_dir):
@@ -216,15 +216,18 @@ def update_board(screen, snakes, food):
             for i in range(5,13):
                 spots[i][16]=1
                 temprect = rect.move(16 * OFFSET, i * OFFSET)
-                pygame.draw.rect(screen, RED, temprect)
+                pygame.draw.rect(screen, (120,120,120), temprect)
             for i in range(19,27):
                 spots[i][16]=1
                 temprect = rect.move(16 * OFFSET, i * OFFSET)
-                pygame.draw.rect(screen, RED, temprect)
+                pygame.draw.rect(screen, (120,120,120), temprect)
 
         # Faire l'affichage des statistiques de la pool
         font = pygame.font.Font(None, 15)
-        message_stats = font.render("Nombre de produits ramenées : " + str(snake.individu.size//1), True, WHITE)
+        somme = 0
+        for snake in snakes:
+            somme+=snake.individu.size
+        message_stats = font.render("Nombre de produits ramenés : " + str(somme//2), True, WHITE)
 
         screen.blit(message_stats, (10, 20)) 
  
@@ -372,7 +375,8 @@ def play(screen, pool, list_snakes):
             #____________________________ DECISION-MAKING _____________________________
 
             inp = encoreUnMapping(spots, snake)
-            #inp.append(snake.hasPackage)
+            inp.append(snake.hasPackage)
+            inp.append(leftSide)
             snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp))) 
 
             #____________________________ /DECISION-MAKING _____________________________
@@ -404,7 +408,12 @@ def play(screen, pool, list_snakes):
                 if leftSide:
                     snake.pickup()
                 else:
-                    snake.deposit()
+                    if not snake.hasPackage:
+                        logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| RECHARGEMENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                        list_snakes.remove(snake)
+                        break
+                    else:
+                        snake.deposit()
                 
                 food = find_food(spots)
 

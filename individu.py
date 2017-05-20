@@ -15,7 +15,7 @@ class Individu:
         self.health = HEALTH_MAX
         
         # creation reseau de neuronne de l'individu
-        self.reseau = NeuralNet(7,6,6,3)
+        self.reseau = NeuralNet(9,6,6,3)
         
         # creation ADN
         if (dna == "null"):
