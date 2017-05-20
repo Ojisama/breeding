@@ -2,21 +2,32 @@
 
 from collections import deque, namedtuple
 from pool import *
+from timeit import default_timer as timer
 import random
 import pygame
 import select
 from individu import Individu
 from Mapping import *
+from IA import *
+import csv
+import sys
+import matplotlib.pyplot as plt
 
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-speed=150
+speed=100
 BOARD_LENGTH = 32
-OFFSET = 16
+OFFSET = int(BOARD_LENGTH/2)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 POOL_SIZE = 50
+IHM = True
+MUR = True
+
+side =[True]
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
@@ -40,8 +51,8 @@ class Snake(object):
         tailmax (int): taille du snake
         individu (individu): instance d'individu associée à l'instance de Snake
     """
-    def __init__(self, direction=DIRECTIONS.Right, point=(16, 16, (20,120,80)), color=(20,120,80)):
-        self.tailmax = 4
+    def __init__(self, direction=DIRECTIONS.Right, point=(OFFSET, OFFSET, (20,120,80)), color=(20,120,80)):
+        self.tailmax = 1
         self.direction = direction 
         self.deque = deque()
         self.deque.append(point)
@@ -49,6 +60,7 @@ class Snake(object):
         self.nextDir = deque()
         self.indexDirection = 2
         self.individu = Individu()
+        side[0]=True
     
     def __str__(self):
         return str(self.tailmax)
@@ -121,10 +133,18 @@ class Snake(object):
 
 def find_food(spots):
     while True:
-        food = random.randrange(BOARD_LENGTH), random.randrange(BOARD_LENGTH)
-        if (not (spots[food[0]][food[1]] == 1 or
-            spots[food[0]][food[1]] == 2)):
-            break
+        if side[0]:
+            food = random.randrange(BOARD_LENGTH), random.randrange(8)
+            if (not (spots[food[0]][food[1]] == 1 or
+                spots[food[0]][food[1]] == 2)):
+                side[0]=False
+                break
+        else:
+            food = 16, 28
+            if (not (spots[food[0]][food[1]] == 1 or
+                spots[food[0]][food[1]] == 2)):
+                side[0]=True
+                break
     return food
 
 
@@ -137,35 +157,73 @@ def end_condition(board, coord):
     return False
 
 def make_board():
-    spots = [[] for i in range(BOARD_LENGTH)]
-    for row in spots:
-        for i in range(BOARD_LENGTH):
-            row.append(0)
-    return spots
+    return [[0 for i in range(BOARD_LENGTH)] for i in range(BOARD_LENGTH)]
     
 
 def update_board(screen, snakes, food):
-    rect = pygame.Rect(0, 0, OFFSET, OFFSET)
+    if IHM:
+        rect = pygame.Rect(0, 0, OFFSET, OFFSET)
+    
+        spots = [[] for i in range(BOARD_LENGTH)]
+        num1 = 0
+        num2 = 0
+        for row in spots:
+            for i in range(BOARD_LENGTH):
+                row.append(0)
+                temprect = rect.move(num1 * OFFSET, num2 * OFFSET)
+                pygame.draw.rect(screen, (12,35,64), temprect)
+                num2 += 1
+            num1 += 1
+        spots[food[0]][food[1]] = 2
+        temprect = rect.move(food[1] * OFFSET, food[0] * OFFSET)
+        pygame.draw.rect(screen, (164,210,51), temprect)
+        temprect = rect.move(28 * OFFSET, 16 * OFFSET)
+        pygame.draw.rect(screen, WHITE, temprect)
+        for snake in snakes:
+            for coord in snake.deque:
+                spots[coord[0]][coord[1]] = 1
+                temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
+                pygame.draw.rect(screen, (0,184,222), temprect)
+        if MUR:
+            spots[0][0]=1
+            temprect = rect.move(0, 0)
+            pygame.draw.rect(screen, (255,228,196), temprect)
+            for i in range(5,13):
+                spots[i][16]=1
+                temprect = rect.move(16 * OFFSET, i * OFFSET)
+                pygame.draw.rect(screen, RED, temprect)
+            for i in range(19,27):
+                spots[i][16]=1
+                temprect = rect.move(16 * OFFSET, i * OFFSET)
+                pygame.draw.rect(screen, RED, temprect)
 
-    spots = [[] for i in range(BOARD_LENGTH)]
-    num1 = 0
-    num2 = 0
-    for row in spots:
-        for i in range(BOARD_LENGTH):
-            row.append(0)
-            temprect = rect.move(num1 * OFFSET, num2 * OFFSET)
-            pygame.draw.rect(screen, BLACK, temprect)
-            num2 += 1
-        num1 += 1
-    spots[food[0]][food[1]] = 2
-    temprect = rect.move(food[1] * OFFSET, food[0] * OFFSET)
-    pygame.draw.rect(screen, rand_color(), temprect)
-    for snake in snakes:
-        for coord in snake.deque:
-            spots[coord[0]][coord[1]] = 1
-            temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
-            pygame.draw.rect(screen, coord[2], temprect)
-    return spots
+        # Faire l'affichage des statistiques de la pool
+        font = pygame.font.Font(None, 15)
+        message_stats = font.render("Nombre de produits ramenées : " + str(snake.individu.size//2), True, WHITE)
+
+        screen.blit(message_stats, (10, 20)) 
+ 
+
+
+
+        return spots
+    else:
+        spots=make_board()
+        spots[food[0]][food[1]] = 2
+        for snake in snakes:
+            for coord in snake.deque:
+                spots[coord[0]][coord[1]] = 1
+        if MUR: 
+            spots[0][0]=1
+            for i in range(5,13):
+                spots[i][16]=1
+            for i in range(19,27):
+                spots[i][16]=1
+
+
+                     
+            
+        return spots
 
 def get_color(s):
     if s == "bk":
@@ -182,40 +240,13 @@ def get_color(s):
         print("WHAT", s)
         return BLUE
 
-def update_board_delta(screen, deltas):
-    # accepts a queue of deltas in the form
-    # [("d", 13, 30), ("a", 4, 6, "rd")]
-    # valid colors: re, wh, bk, bl
-    rect = pygame.Rect(0, 0, OFFSET, OFFSET)
-    change_list = []
-    delqueue = deque()
-    addqueue = deque()
-    while len(deltas) != 0:
-        d = deltas.pop()
-        change_list.append(pygame.Rect(d[1], d[2], OFFSET, OFFSET))
-        if d[0] == "d":
-            delqueue.append((d[1], d[2]))
-        elif d[0] == "a":
-            addqueue.append((d[1], d[2], get_color(d[3])))
-    
-    for d_coord in delqueue:
-        temprect = rect.move(d_coord[1] * OFFSET, d_coord[0] * OFFSET)
-        # TODO generalize background color
-        pygame.draw.rect(screen, BLACK, temprect)
-
-    for a_coord in addqueue:
-        temprect = rect.move(a_coord[1] * OFFSET, a_coord[0] * OFFSET)
-        pygame.draw.rect(screen, a_coord[2], temprect)
-
-    return change_list
-
 # Return 0 to exit the program, 1 for a one-player game
 def menu(screen):
     font = pygame.font.Font(None, 30)
     menu_message1 = font.render("Press enter for one-player, t for two-player", True, WHITE)
     menu_message2 = font.render("C'est le PIST de l'ambiance", True, WHITE)
 
-    screen.fill(BLACK)
+    screen.fill((12,35,64))
     screen.blit(menu_message1, (32, 32)) 
     screen.blit(menu_message2, (32, 64))
     pygame.display.update()
@@ -309,8 +340,12 @@ def play(screen, pool):
 
         #____________________________ DECISION-MAKING _____________________________
 
-        inp = mappingBis(spots, snake)
+        inp = encoreUnMapping(spots, snake)
+#        print(inp)
+#        print(snake.trad_direction(network_nextDir(snake.individu,inp)))
         snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp)))
+#        snake.populate_nextDir(snake.trad_direction(directionAuto(inp)))
+        
 
         #____________________________ /DECISION-MAKING _____________________________
 
@@ -319,14 +354,19 @@ def play(screen, pool):
         # Game logic
         next_head = move(snake)
         if snake.individu.decay():
-            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
-            return snake.tailmax
-        if (end_condition(spots, next_head)):
-            print("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+            logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
             return snake.tailmax
 
+        if (end_condition(spots, next_head)):
+            logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+#            print(inp)
+            return snake.tailmax
+        
+        
+        
+        #print(inp)
         if is_food(spots, next_head):
-            snake.tailmax += 4
+            snake.tailmax += 0
             snake.individu.eat()
             food = find_food(spots)
         pool.updateStatistics()
@@ -336,11 +376,13 @@ def play(screen, pool):
             snake.deque.popleft()
 
         # Draw code
-        screen.fill(BLACK)  # makes screen black
+        screen.fill((12,35,64))  # makes screen black
 
         spots = update_board(screen, [snake], food)
 
         pygame.display.update()
+        # à décommenter pour afficher le Snake 
+        # MAIS environ 75% plus lent sur mappingBis 5000 itérations
 
 def network_nextDir(indiv,inp):
     output=indiv.reseau.run(inp)
@@ -353,55 +395,38 @@ def network_nextDir(indiv,inp):
                 max = liste[i]
         return indice
     return maxIndice(output)
-    
 
-def encode_deltas(delta_str):
-    # delta_str is in the form
-    # "(15 23 bk)(22 12 fo)(10 11 rm)"
-    deltas = deque()
-    state = "open"
-    while len(delta_str) != 0:
-        if state == "open":
-            encoded_delta = ["fx", 0, 0, "fx"]
-            delta_str = delta_str[1:]
-            on_num = 1
-            store_val = ""
-            state = "num"
-        if state == "num":
-            if delta_str[0] == " ":
-                delta_str = delta_str[1:]
-                encoded_delta[on_num] = int(store_val)
-                store_val = ""
-                on_num += 1
-                if on_num > 2:
-                    state = "color"
-            else:
-                store_val += delta_str[0]
-                delta_str = delta_str[1:]
-        if state == "color":
-            if delta_str[0] == ")":
-                if store_val == "rm":
-                    encoded_delta[0] = "d"
-                elif store_val == "fo":
-                    encoded_delta[0] = "a"
-                    encoded_delta[3] = "fo"
-                else:
-                    encoded_delta[0] = "a"
-                    encoded_delta[3] = store_val
-                delta_str = delta_str[1:]
-                state = "open"
-                deltas.appendleft(encoded_delta)
-            else:
-                store_val += delta_str[0]
-                delta_str = delta_str[1:]
-    return deltas
+def sauvegarder(pool, fileName):
+    with open(fileName,"w") as file:
+        writer = csv.writer(file)
+        for i in range(pool.getTaille()):
+            writer.writerows([pool.population[i].dna.data])
+            writer.writerow([pool.population[i].size])
+        file.close()
+
+def charger(fileName):
+    i=0
+    pool=Pool(POOL_SIZE)
+    pool.trained=POOL_SIZE
+    cr = csv.reader(open(fileName,"rU"))
+    for row in cr:       
+        if len(row)==1:
+            pool.population[i].size=int(row[0])
+            i+=1
+        elif len(row)>1:
+            pool.population[i] = Individu()
+            for j in range(pool.population[i].reseau.sizeTotale()):
+                pool.population[i].dna.data[j]=float(row[j])
+
+    return pool
+    
                 
 
 def game_over(screen, eaten):
     message1 = "You ate %d foods" % eaten
     message2 = "Press enter to play again, esc to quit."
-    game_over_message1 = pygame.font.Font(None, 30).render(message1, True, BLACK)
-    game_over_message2 = pygame.font.Font(None, 30).render(message2, True, BLACK)
+    game_over_message1 = pygame.font.Font(None, 30).render(message1, True, (12,35,64))
+    game_over_message2 = pygame.font.Font(None, 30).render(message2, True, (12,35,64))
 
     overlay = pygame.Surface((BOARD_LENGTH * OFFSET, BOARD_LENGTH * OFFSET))
     overlay.fill((84, 84, 84))
@@ -429,9 +454,12 @@ def game_over(screen, eaten):
 #______________________________________ /SCRIPT DU JEU ________________________________
 
 
+        
+    
 
 def main():
     pool = Pool(POOL_SIZE)
+#    pool = charger('optimumAmazon88.csv')
     pygame.init()
     screen = pygame.display.set_mode([BOARD_LENGTH * OFFSET,
         BOARD_LENGTH * OFFSET])
@@ -441,10 +469,15 @@ def main():
     first = True
     playing = True
     i=0
+    start = timer()
+    numSnake = []
+    avgFitness = []
+    maxFitness = []
     while playing:
+        
         i+=1
         if first or pick == 3:
-            pick = menu(screen)
+            pick = 1
 
         options = {0 : quit,
                 1 : play}
@@ -455,6 +488,23 @@ def main():
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
+        if pool.trained%10 == 0:
+            numSnake.append(i)
+            avgFitness.append(pool.getFitnessMoy())
+            maxFitness.append(pool.getFitnessMax()[0])
+
+    
+    plt.plot(numSnake, maxFitness, label="Fitness max")
+    plt.plot(numSnake, avgFitness, label="Fitness moyen")    
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.ylabel('Fitness')
+    plt.xlabel("Nombre de snakes")
+    plt.show()
+#    sauvegarder(pool,'out.csv')
+    end = timer()
+    time = end-start
+    print(str(time))
+    print(str(time/i)+" ms par Snake")
     pygame.quit()
 
 if __name__ == "__main__":
