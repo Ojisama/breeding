@@ -18,8 +18,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
 speed=1000
-BOARD_LENGTH = 48
-OFFSET = 12
+BOARD_LENGTH = 32
+OFFSET = 15
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -27,7 +27,7 @@ BLUE = (0, 0, 255)
 POOL_SIZE = 50
 IHM = True
 MUR = True
-NB_SNAKE_CONCOMITTANTS_LOL = 20
+NB_SNAKE_CONCOMITTANTS_LOL = 7
 leftSide = True
 
 
@@ -173,20 +173,20 @@ def find_food(spots):
 
 
 def end_condition(snake, board, coord, list_next_head):
+    deadSnakes = []
     if (coord[0] < 0 or coord[0] >= BOARD_LENGTH or coord[1] < 0 or
             coord[1] >= BOARD_LENGTH):
-        return True
+        return ("DANS LE MUR",[snake])
     if (board[coord[0]][coord[1]] == 1):
-        return True
+        return ("DANS LE MUR",[snake])
     for (snake_iter,next_head_iter) in list_next_head.items():
-        #print(coord)
-        #print(next_head_iter)
         if snake != snake_iter and next_head_iter == coord:
+            deadSnakes.append(snake)
+            deadSnakes.append(snake_iter)
             del list_next_head[snake]
             del list_next_head[snake_iter]
-            print("Choc effroyable")
-            return True
-    return False
+            return ("COLLISION",deadSnakes)
+    return (False,[])
 
 def make_board():
     return [[0 for i in range(BOARD_LENGTH)] for i in range(BOARD_LENGTH)]
@@ -384,11 +384,12 @@ def play(screen, pool, list_snakes):
 
         
         list_next_head = {}
+        toRemove = []
         for snake in list_snakes:
 
             #____________________________ DECISION-MAKING _____________________________
 
-            inp = mappingDrone(spots, snake, leftSide)
+            inp = mappingParallelDrones(spots, snake, leftSide)
             inp.append(snake.hasPackage)
             inp.append(leftSide)
             if len(snake.individu.reseau.layers[0].coeff[0])==len(inp):
@@ -402,23 +403,25 @@ def play(screen, pool, list_snakes):
             next_head = move(snake)
             list_next_head[snake] = next_head
             if snake.individu.decay():
-                logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = 0   \t| Fit = "+str(snake.individu.getFitness())+" \t| DECAY \t| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
                 snake.die()
                 pool.updateStatistics()
                 if snake.hasPackage == 1:
                     leftSide = True
                     food = find_food(spots)
-                list_snakes.remove(snake)
+                toRemove.append(snake)
                 break
 
-            if end_condition(snake, spots, next_head, list_next_head):
-                logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
-                snake.die()
-                pool.updateStatistics()
-                if snake.hasPackage == 1:
-                    leftSide = True
-                    food = find_food(spots)
-                list_snakes.remove(snake)
+            (crash,deadSnakes) = end_condition(snake, spots, next_head, list_next_head)
+            if crash:
+                for snake in deadSnakes:
+                    logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = "+str(snake.individu.health)+" \t| Fit = "+str(snake.individu.getFitness())+" \t| "+crash+" \t| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                    snake.die()
+                    if snake.hasPackage == 1:
+                        leftSide = True
+                        food = find_food(spots)
+                    toRemove.append(snake)
+                    pool.updateStatistics()
                 break
 
             if is_food(spots, next_head):
@@ -426,10 +429,10 @@ def play(screen, pool, list_snakes):
                     snake.pickup()
                 else:
                     if not snake.hasPackage:
-                        logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" \t| Health = "+str(snake.individu.health)+" \t|| Fitness = "+str(snake.individu.getFitness())+" \t|| RECHARGEMENT \t|| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                        logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = "+str(snake.individu.health)+" \t| Fit = "+str(snake.individu.getFitness())+" \t| RECHARGEMENT  | ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
                         snake.die()
                         pool.updateStatistics()
-                        list_snakes.remove(snake)
+                        toRemove.append(snake)
                         break
                     else:
                         snake.deposit()
@@ -438,6 +441,9 @@ def play(screen, pool, list_snakes):
 
             if len(snake.deque) > snake.tailmax:
                 snake.deque.popleft()
+
+        for snake in set(toRemove):
+            list_snakes.remove(snake)
 
         # Draw code
         screen.fill((12,35,64))  # makes screen black
