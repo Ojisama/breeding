@@ -15,11 +15,12 @@ class Layer(object):
 	"""
 
 	def __init__(self, nbInput, nbOutput, prev, name="Unnamed"):
-		self.size = nbInput*nbOutput
+		self.size = (nbInput+1)*nbOutput
 		self.prev = prev
 		self.name = name+" ("+str(nbInput)+"x"+str(nbOutput)+")"
 		self.output = np.zeros(nbOutput)
 		self.coeff = np.ones((nbOutput,nbInput))
+		self.biais = np.zeros(nbOutput)
 
 	"""calc() met à jour les ouput de __self__ en effectuant le produit matriciel input*coeff = output
 	@param: 
@@ -28,7 +29,7 @@ class Layer(object):
 	def calc(self):
 		raw_coeff = np.dot(self.coeff,self.prev.output)
 		for i in range(len(raw_coeff)):
-			self.output[i] = raw_coeff[i]
+			self.output[i] = raw_coeff[i] + self.biais[i]
 
 	"""toString() renvoie une String décrivant explicitement le Layer
 	@param: 
@@ -37,12 +38,4 @@ class Layer(object):
 	def toString(self):
 		if(self.prev is None):
 			return ("-------BEGINNING OF INPUT LAYER: ---------------\nInput Layer \nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF INPUT LAYER-------------")
-		return ("-------BEGINNING OF LAYER: "+self.name+" ---------------\nInput \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\nOutput\t" + str(self.output) + "\n--------------END OF LAYER: "+self.name+"-------------")
-def randomiim():
-	return random.randrange(10)
-
-def __main__():
-	for i in range(10):
-		print(randomiim())
-
-#__main__()
+		return ("-------BEGINNING OF LAYER: "+self.name+" ---------------\nInput \t" + str(self.prev.output) + "\nCoeffs\t" + str(self.coeff) + "\Biais\t" + str(self.biais) + "\nOutput\t" + str(self.output) + "\n--------------END OF LAYER: "+self.name+"-------------")

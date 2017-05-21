@@ -3,6 +3,7 @@
 from dna import DNA
 from neuralNet import NeuralNet
 
+
 HEALTH_MAX = 32*8
 DECAY_RATE = 1
 APPLE_REWARD = 100
@@ -16,6 +17,7 @@ class Individu:
         self.used = True
         # creation reseau de neuronne de l'individu
         self.reseau = NeuralNet(9,6,6,3)
+
         
         # creation ADN
         if (dna == "null"):
@@ -43,7 +45,3 @@ class Individu:
 
     def __str__(self):
         return str(self.size)+" / "+str(self.health)+" | "+str(self.dna)
-
-"""indi = Individu()
-#print(indi.dna.data)
-print(len(indi.dna.data))"""
