@@ -26,7 +26,11 @@ class DNA():
                 if hasard == 0:
                     newcoeff += changement
                 else:
-                    newcoeff -= changement
+                    if (newcoeff - changement) < -1:
+                        newcoeff = -1
+                    else:
+                        newcoeff -= changement
+
 
             new_adn.data[i] = newcoeff 
         return(new_adn)

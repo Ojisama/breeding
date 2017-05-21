@@ -3,7 +3,8 @@
 from dna import DNA
 from neuralNet import NeuralNet
 
-HEALTH_MAX = 32*4
+
+HEALTH_MAX = 32*8
 DECAY_RATE = 1
 APPLE_REWARD = 100
 
@@ -13,9 +14,10 @@ class Individu:
         self.size = 0
         self.casesParcourues = 0
         self.health = HEALTH_MAX
-        
+        self.used = True
         # creation reseau de neuronne de l'individu
-        self.reseau = NeuralNet(7,5,5,3)
+        self.reseau = NeuralNet(9,6,6,3)
+
         
         # creation ADN
         if (dna == "null"):

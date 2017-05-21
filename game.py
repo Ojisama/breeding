@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 import random
 import pygame
 import select
+import math
 from individu import Individu
 from Mapping import *
 import csv
@@ -13,23 +14,28 @@ import sys
 import matplotlib.pyplot as plt
 
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
-speed = 15000
+speed=1000
 BOARD_LENGTH = 32
-OFFSET = int(BOARD_LENGTH/2)
+OFFSET = 15
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
-POOL_SIZE = 100
+POOL_SIZE = 50
 IHM = True
+MUR = True
+NB_SNAKE_CONCOMITTANTS_LOL = 7
+leftSide = True
+
 
 
 DIRECTIONS = namedtuple('DIRECTIONS',
                         ['Up', 'Down', 'Left', 'Right'])(0, 1, 2, 3)
 
+def rand_start():
+    return (random.randrange(BOARD_LENGTH)|2, (random.randrange(BOARD_LENGTH)&16)|2, rand_color())
 
 def rand_color():
     return (random.randrange(254) | 64, random.randrange(254) | 64, random.randrange(254) | 64)
@@ -48,24 +54,45 @@ class Snake(object):
         individu (individu): instance d'individu associée à l'instance de Snake
     """
 
-    def __init__(self, direction=DIRECTIONS.Right, point=(OFFSET, OFFSET, (20, 120, 80)), color=(20, 120, 80)):
-        self.tailmax = 4
-        self.direction = direction
+    def __init__(self, direction=DIRECTIONS.Right, point=(OFFSET, OFFSET, (20,120,80)), color=(20,120,80)):
+        self.tailmax = 1
+        self.direction = direction 
+
         self.deque = deque()
         self.deque.append(point)
         self.color = color
         self.nextDir = deque()
         self.indexDirection = 2
         self.individu = Individu()
+        self.hasPackage = 0
 
     def __str__(self):
         return str(self.tailmax)
 
     def get_color(self):
-        return (20, 120, 80)
+        return self.color
 
     def setIndividu(self, individuPool):
         self.individu = individuPool
+
+    def pickup(self):
+        global leftSide
+        if self.hasPackage==0:
+            leftSide = False
+            self.individu.eat()
+            self.hasPackage = 1
+            self.color = RED
+
+    def deposit(self):
+        global leftSide
+        if self.hasPackage==1:
+            leftSide = True
+            self.individu.eat()
+            self.hasPackage = 0
+            self.color = WHITE
+
+    def die(self):
+        self.individu.used = False
 
     def trad_direction(self, nv_dir):
         """Traduit la direction demandée (relative, 0:gauche, 1: en face 2:droite) 
@@ -128,25 +155,43 @@ class Snake(object):
 
 def find_food(spots):
     while True:
-        food = random.randrange(BOARD_LENGTH), random.randrange(BOARD_LENGTH)
-        if (not (spots[food[0]][food[1]] == 1 or
-                 spots[food[0]][food[1]] == 2)):
-            break
+        if leftSide:
+            food = random.randrange(BOARD_LENGTH), random.randrange(8)
+            if (not (spots[food[0]][food[1]] == 1 or
+                spots[food[0]][food[1]] == 2)):
+                break
+        else:
+            depositRange = int(math.sqrt(NB_SNAKE_CONCOMITTANTS_LOL)//1 + 1)
+            depositShift = int(depositRange//2)
+            depositX = random.randrange(depositRange)-depositShift
+            depositY = random.randrange(depositRange)-depositShift
+            food = (BOARD_LENGTH//2)+depositX, 3*BOARD_LENGTH//4+depositY
+            if (not (spots[food[0]][food[1]] == 1 or
+                spots[food[0]][food[1]] == 2)):
+                break
+
     return food
 
 
-def end_condition(board, coord):
+def end_condition(snake, board, coord, list_next_head):
+    deadSnakes = []
     if (coord[0] < 0 or coord[0] >= BOARD_LENGTH or coord[1] < 0 or
             coord[1] >= BOARD_LENGTH):
-        return True
+        return ("DANS LE MUR",[snake])
     if (board[coord[0]][coord[1]] == 1):
-        return True
-    return False
+        return ("DANS LE MUR",[snake])
+    for (snake_iter,next_head_iter) in list_next_head.items():
+        if snake != snake_iter and next_head_iter == coord:
+            deadSnakes.append(snake)
+            deadSnakes.append(snake_iter)
+            del list_next_head[snake]
+            del list_next_head[snake_iter]
+            return ("COLLISION",deadSnakes)
+    return (False,[])
 
 
 def make_board():
     return [[0 for i in range(BOARD_LENGTH)] for i in range(BOARD_LENGTH)]
-
 
 def update_board(screen, snakes, food):
     if IHM:
@@ -159,24 +204,67 @@ def update_board(screen, snakes, food):
             for i in range(BOARD_LENGTH):
                 row.append(0)
                 temprect = rect.move(num1 * OFFSET, num2 * OFFSET)
-                pygame.draw.rect(screen, BLACK, temprect)
+                pygame.draw.rect(screen, (12,35,64), temprect)
                 num2 += 1
             num1 += 1
+
         spots[food[0]][food[1]] = 2
+        if leftSide:
+            foodColor = (164,210,51)
+        else:
+            foodColor = WHITE
         temprect = rect.move(food[1] * OFFSET, food[0] * OFFSET)
-        pygame.draw.rect(screen, rand_color(), temprect)
+        pygame.draw.rect(screen, foodColor, temprect)
+
+
         for snake in snakes:
             for coord in snake.deque:
                 spots[coord[0]][coord[1]] = 1
                 temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
-                pygame.draw.rect(screen, coord[2], temprect)
+
+                pygame.draw.rect(screen, snake.get_color(), temprect)
+        if MUR:
+            tailleMur = BOARD_LENGTH//5
+            for i in range(tailleMur,2*tailleMur):
+                spots[i][BOARD_LENGTH//2]=1
+                """spots[16][i]=1
+                temprect = rect.move(i * OFFSET, 16 * OFFSET)
+                pygame.draw.rect(screen, (120,120,120), temprect)"""
+                temprect = rect.move(BOARD_LENGTH//2 * OFFSET, i * OFFSET)
+                pygame.draw.rect(screen, (120,120,120), temprect)
+            for i in range(3*tailleMur,4*tailleMur):
+                spots[i][BOARD_LENGTH//2]=1
+                """spots[16][i]=1
+                temprect = rect.move(i * OFFSET, 16 * OFFSET)
+                pygame.draw.rect(screen, (120,120,120), temprect)"""
+                temprect = rect.move(BOARD_LENGTH//2 * OFFSET, i * OFFSET)
+                pygame.draw.rect(screen, (120,120,120), temprect)
+
+        # Faire l'affichage des statistiques de la pool
+        font = pygame.font.Font(None, 15)
+        somme = 0
+        for snake in snakes:
+            somme+=snake.individu.size
+        message_stats = font.render("Nombre de produits ramenés : " + str(somme//2), True, WHITE)
+
+        screen.blit(message_stats, (10, 20)) 
+ 
         return spots
+
     else:
-        spots = make_board()
+        spots=make_board()
+
         spots[food[0]][food[1]] = 2
         for snake in snakes:
             for coord in snake.deque:
                 spots[coord[0]][coord[1]] = 1
+        if MUR: 
+            spots[0][0]=1
+            for i in range(5,13):
+                spots[i][16]=1
+            for i in range(19,27):
+                spots[i][16]=1           
+            
         return spots
 
 
@@ -204,8 +292,9 @@ def menu(screen):
         "Press enter for one-player, t for two-player", True, WHITE)
     menu_message2 = font.render("C'est le PIST de l'ambiance", True, WHITE)
 
-    screen.fill(BLACK)
-    screen.blit(menu_message1, (32, 32))
+
+    screen.fill((12,35,64))
+    screen.blit(menu_message1, (32, 32)) 
     screen.blit(menu_message2, (32, 64))
     pygame.display.update()
     while True:
@@ -223,7 +312,7 @@ def menu(screen):
         return 0
 
 
-def quit(screen, pool):
+def quit(screen,pool,list_snakes):
     return False
 
 
@@ -268,18 +357,13 @@ def is_food(board, point):
 
 # Return false to quit program, true to go to
 # gameover screen
-def play(screen, pool):
+
+def play(screen, pool, list_snakes): 
     clock = pygame.time.Clock()
     spots = make_board()
     indexDirection = 0
+    global leftSide
 
-    #______________________________________ SCRIPT DU BREEDING _______________
-
-    snake = Snake()
-    snake.setIndividu(pool.breeding())
-
-    #______________________________________ /SCRIPT DU BREEDING ______________
-    # PUTAING C BO LA SIMPLICITÉ
 
     # Board set up
     spots[0][0] = 1
@@ -298,50 +382,85 @@ def play(screen, pool):
         if done:
             return False
 
-        #____________________________ DECISION-MAKING _________________________
 
-        inp = encoreUnMapping(spots, snake)
-        snake.populate_nextDir(snake.trad_direction(
-            network_nextDir(snake.individu, inp)))
+        #______________________________________ SCRIPT DU BREEDING _____________________________
+        while len(list_snakes) < NB_SNAKE_CONCOMITTANTS_LOL: #initialisation
+            snake = Snake(point=rand_start())
+            snake.setIndividu(pool.breeding())
+            list_snakes.append(snake)
 
-        #____________________________ /DECISION-MAKING ________________________
+        #______________________________________ /SCRIPT DU BREEDING ____________________________
+        # PUTAING C BO LA SIMPLICITÉ
 
-        # Game logic
-        next_head = move(snake)
-        if snake.individu.decay():
-            logging.debug("Snake n°"+str(pool.trained)
-                +" | Size: "+str(snake.individu.size)
-                +" \t| Health = 0  \t|| Fitness = "+str(snake.individu.getFitness())
-                +" \t|| MORT NATURELLE \t\t|| ["+str(pool.min)+";"+str(pool.max)
-                +"] - avg = "+str(pool.moy))
-            return snake.tailmax
+        
+        list_next_head = {}
+        toRemove = []
+        for snake in list_snakes:
 
-        if (end_condition(spots, next_head)):
-            logging.debug("Snake n°"+str(pool.trained)
-                +" | Size: "+str(snake.individu.size)
-                +" \t| Health = "+str(snake.individu.health)
-                +" \t|| Fitness = " +str(snake.individu.getFitness())
-                +" \t|| AFFREUX ACCIDENT \t|| ["+str(pool.min)+";"+str(pool.max)
-                +"] - avg = "+str(pool.moy))
-            return snake.tailmax
+            #____________________________ DECISION-MAKING _____________________________
 
-        if is_food(spots, next_head):
-            snake.tailmax += 1
-            snake.individu.eat()
-            food = find_food(spots)
-        pool.updateStatistics()
-        snake.deque.append(next_head)
+            inp = mappingParallelDrones(spots, snake, leftSide)
+            inp.append(snake.hasPackage)
+            inp.append(leftSide)
+            if len(snake.individu.reseau.layers[0].coeff[0])==len(inp):
+                snake.populate_nextDir(snake.trad_direction(network_nextDir(snake.individu,inp))) 
 
-        if len(snake.deque) > snake.tailmax:
-            snake.deque.popleft()
+            #____________________________ /DECISION-MAKING _____________________________
+
+
+            # Game logic
+            
+            next_head = move(snake)
+            list_next_head[snake] = next_head
+            if snake.individu.decay():
+                logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = 0   \t| Fit = "+str(snake.individu.getFitness())+" \t| DECAY \t| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                snake.die()
+                pool.updateStatistics()
+                if snake.hasPackage == 1:
+                    leftSide = True
+                    food = find_food(spots)
+                toRemove.append(snake)
+                break
+
+            (crash,deadSnakes) = end_condition(snake, spots, next_head, list_next_head)
+            if crash:
+                for snake in deadSnakes:
+                    logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = "+str(snake.individu.health)+" \t| Fit = "+str(snake.individu.getFitness())+" \t| "+crash+" \t| ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                    snake.die()
+                    if snake.hasPackage == 1:
+                        leftSide = True
+                        food = find_food(spots)
+                    toRemove.append(snake)
+                    pool.updateStatistics()
+                break
+
+            if is_food(spots, next_head):
+                if leftSide:
+                    snake.pickup()
+                else:
+                    if not snake.hasPackage:
+                        logging.debug("Snake n°"+str(pool.trained)+" | Size: "+str(snake.individu.size)+" | Health = "+str(snake.individu.health)+" \t| Fit = "+str(snake.individu.getFitness())+" \t| RECHARGEMENT  | ["+str(pool.min)+";"+str(pool.max)+"] - avg = "+str(pool.moy))
+                        snake.die()
+                        pool.updateStatistics()
+                        toRemove.append(snake)
+                        break
+                    else:
+                        snake.deposit()
+                food = find_food(spots)   
+            snake.deque.append(next_head)
+
+            if len(snake.deque) > snake.tailmax:
+                snake.deque.popleft()
+
+        for snake in set(toRemove):
+            list_snakes.remove(snake)
 
         # Draw code
-        screen.fill(BLACK)  # makes screen black
-
-        spots = update_board(screen, [snake], food)
+        screen.fill((12,35,64))  # makes screen black
+        spots = update_board(screen, list_snakes, food)
 
         pygame.display.update()
-        # à décommenter pour afficher le Snake
+        # à décommenter pour afficher le Snake 
         # MAIS environ 75% plus lent sur mappingBis 5000 itérations
 
 
@@ -358,6 +477,7 @@ def network_nextDir(indiv, inp):
     return maxIndice(output)
 
 
+
 def sauvegarder(pool, fileName):
     with open(fileName, "w") as file:
         writer = csv.writer(file)
@@ -365,6 +485,7 @@ def sauvegarder(pool, fileName):
             writer.writerows([pool.population[i].dna.data])
             writer.writerow([pool.population[i].size])
         file.close()
+
 
 
 def charger(fileName):
@@ -384,13 +505,13 @@ def charger(fileName):
     return pool
 
 
+
 def game_over(screen, eaten):
     message1 = "You ate %d foods" % eaten
     message2 = "Press enter to play again, esc to quit."
-    game_over_message1 = pygame.font.Font(
-        None, 30).render(message1, True, BLACK)
-    game_over_message2 = pygame.font.Font(
-        None, 30).render(message2, True, BLACK)
+    game_over_message1 = pygame.font.Font(None, 30).render(message1, True, (12,35,64))
+    game_over_message2 = pygame.font.Font(None, 30).render(message2, True, (12,35,64))
+
 
     overlay = pygame.Surface((BOARD_LENGTH * OFFSET, BOARD_LENGTH * OFFSET))
     overlay.fill((84, 84, 84))
@@ -419,10 +540,11 @@ def game_over(screen, eaten):
                     return True
 #______________________________________ /SCRIPT DU JEU ___________________
 
+        
+    
 
 def main():
     pool = Pool(POOL_SIZE)
-    #pool = charger('qlearning.csv')
     pygame.init()
     screen = pygame.display.set_mode([BOARD_LENGTH * OFFSET,
                                       BOARD_LENGTH * OFFSET])
@@ -432,38 +554,32 @@ def main():
                      pygame.Rect(50, 50, 10, 10))
     first = True
     playing = True
-    i = 0
+    i=0
+
+    list_snakes = []
+
     start = timer()
     numSnake = []
     avgFitness = []
     maxFitness = []
     while playing:
-
-        i += 1
+        i+=1
         if first or pick == 3:
             pick = 1
 
-        options = {0: quit,
-                   1: play}
-        now = options[pick](screen, pool)
+        options = {0 : quit,
+                1 : play}
+        now = options[pick](screen,pool,list_snakes)
+
         if now == False:
             break
         elif pick == 1 or pick == 2:
             eaten = now / 4 - 1
             #playing = game_over(screen, eaten)
             first = False
-        if pool.trained % 50 == 0:
-            numSnake.append(i)
-            avgFitness.append(pool.getFitnessMoy())
-            maxFitness.append(pool.getFitnessMax()[0])
 
-    plt.plot(numSnake, avgFitness, label="Fitness moyen")
-    plt.plot(numSnake, maxFitness, label="Fitness max")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    plt.ylabel('Fitness')
-    plt.xlabel("Nombre de snakes")
-    plt.show()
-    sauvegarder(pool, 'out.csv')
+#    sauvegarder(pool,'out.csv')
+
     end = timer()
     time = end-start
     print(str(time))

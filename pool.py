@@ -21,6 +21,7 @@ class Pool():
             self.population.append(Individu())
         self.mutationcoeff = (10/self.getFitnessMoy())
         self.trained = 0
+        self.generation = 0
         self.min = 0
         self.moy = 0
         self.max = 0
@@ -29,6 +30,11 @@ class Pool():
     def breeding(self):
         #remplissage initial de la pool par entraînement des N premiers snakes
         self.trained+=1
+
+        # actualisation du numero de la generation
+        if (self.trained % self.n == 0) :
+            self.generation += 1
+        
         if self.trained < self.n+1:
             return self.population[self.trained-1]
         else:
@@ -48,12 +54,11 @@ class Pool():
             while(index1 == index2): # eviter d'avoir le meme index
                 index2 = random.randint(0,len(tab)-1)
             
-            
             parent1 = tab[index1]
             parent2 = tab[index2]
 
             # Remplacer l'individu avec le fitness le plus faible par un enfant
-            index_pire_indiv = self.getFitnessMin()[1]
+            index_pire_indiv = self.getWorstCorpse()[1]
             dna_enfant = parent1.dna.crossover(parent2.dna, self.mutationcoeff)
             enfant = Individu(dna_enfant)
             self.population[index_pire_indiv] = enfant
@@ -75,6 +80,16 @@ class Pool():
                 fitnessMax = individu.getFitness()
                 indexMax = i
         return [fitnessMax,indexMax]
+
+    def getWorstCorpse(self):
+        fitnessMin = sys.maxsize
+        indexMin = 0
+        for i,individu in enumerate(self.population):
+            if not individu.used and individu.getFitness() < fitnessMin:
+                fitnessMin = individu.getFitness()
+                indexMin = i
+
+        return [fitnessMin,indexMin]
 
     def getFitnessMin(self):
         fitnessMin = sys.maxsize
