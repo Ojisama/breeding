@@ -379,6 +379,7 @@ def play(screen, pool, list_snakes):
 
         
         list_next_head = {}
+        toRemove = []
         for snake in list_snakes:
 
             #____________________________ DECISION-MAKING _____________________________
@@ -439,6 +440,9 @@ def play(screen, pool, list_snakes):
             if len(snake.deque) > snake.tailmax:
                 snake.deque.popleft()
 
+        for snake in toRemove:
+            list_snakes.remove(snake)
+            
         # Draw code
         screen.fill((12,35,64))  # makes screen black
         spots = update_board(screen, list_snakes, food)
