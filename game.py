@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 import random
 import pygame
 import select
+import math
 from individu import Individu
 from Mapping import *
 from IA import *
@@ -17,7 +18,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
 speed=1000
-BOARD_LENGTH = 32
+BOARD_LENGTH = 48
 OFFSET = 12
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -26,7 +27,7 @@ BLUE = (0, 0, 255)
 POOL_SIZE = 50
 IHM = True
 MUR = True
-NB_SNAKE_CONCOMITTANTS_LOL = 3
+NB_SNAKE_CONCOMITTANTS_LOL = 20
 leftSide = True
 
 
@@ -160,7 +161,11 @@ def find_food(spots):
                 spots[food[0]][food[1]] == 2)):
                 break
         else:
-            food = BOARD_LENGTH//2, 3*BOARD_LENGTH//4
+            depositRange = int(math.sqrt(NB_SNAKE_CONCOMITTANTS_LOL)//1 + 1)
+            depositShift = int(depositRange//2)
+            depositX = random.randrange(depositRange)-depositShift
+            depositY = random.randrange(depositRange)-depositShift
+            food = (BOARD_LENGTH//2)+depositX, 3*BOARD_LENGTH//4+depositY
             if (not (spots[food[0]][food[1]] == 1 or
                 spots[food[0]][food[1]] == 2)):
                 break
@@ -201,21 +206,21 @@ def update_board(screen, snakes, food):
                 pygame.draw.rect(screen, (12,35,64), temprect)
                 num2 += 1
             num1 += 1
+
         spots[food[0]][food[1]] = 2
+        if leftSide:
+            foodColor = (164,210,51)
+        else:
+            foodColor = WHITE
         temprect = rect.move(food[1] * OFFSET, food[0] * OFFSET)
-        pygame.draw.rect(screen, (164,210,51), temprect)
-        if not leftSide:
-            temprect = rect.move(3*BOARD_LENGTH//4 * OFFSET, BOARD_LENGTH//2 * OFFSET)
-            pygame.draw.rect(screen, WHITE, temprect)
+        pygame.draw.rect(screen, foodColor, temprect)
+
         for snake in snakes:
             for coord in snake.deque:
                 spots[coord[0]][coord[1]] = 1
                 temprect = rect.move(coord[1] * OFFSET, coord[0] * OFFSET)
                 pygame.draw.rect(screen, snake.get_color(), temprect)
         if MUR:
-            spots[0][0]=1
-            temprect = rect.move(0, 0)
-            pygame.draw.rect(screen, (255,228,196), temprect)
             tailleMur = BOARD_LENGTH//5
             for i in range(tailleMur,2*tailleMur):
                 spots[i][BOARD_LENGTH//2]=1
@@ -379,12 +384,11 @@ def play(screen, pool, list_snakes):
 
         
         list_next_head = {}
-        toRemove = []
         for snake in list_snakes:
 
             #____________________________ DECISION-MAKING _____________________________
 
-            inp = encoreUnMapping(spots, snake)
+            inp = mappingDrone(spots, snake, leftSide)
             inp.append(snake.hasPackage)
             inp.append(leftSide)
             if len(snake.individu.reseau.layers[0].coeff[0])==len(inp):
@@ -416,9 +420,7 @@ def play(screen, pool, list_snakes):
                     food = find_food(spots)
                 list_snakes.remove(snake)
                 break
-            
-            
-            
+
             if is_food(spots, next_head):
                 if leftSide:
                     snake.pickup()
@@ -431,18 +433,12 @@ def play(screen, pool, list_snakes):
                         break
                     else:
                         snake.deposit()
-                
-                food = find_food(spots)
-
-                
+                food = find_food(spots)   
             snake.deque.append(next_head)
 
             if len(snake.deque) > snake.tailmax:
                 snake.deque.popleft()
 
-        for snake in toRemove:
-            list_snakes.remove(snake)
-            
         # Draw code
         screen.fill((12,35,64))  # makes screen black
         spots = update_board(screen, list_snakes, food)
